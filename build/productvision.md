@@ -463,7 +463,7 @@ Supabase is expected to store:
 - `funding_sources`
 - `scrape_runs`
 
-#### Possible later addition
+#### Planned V2 addition
 
 - `funding_preferences`
 
@@ -833,7 +833,7 @@ If the task is implementation-oriented, also read:
 When resuming product discussion, the next best topics are:
 
 1. Finalize the onboarding field set per role.
-2. Decide whether `funding_preferences` belongs in initial V2 schema.
+2. Finalize the onboarding versus later profile-edit split.
 3. Later, separately, finalize ETL sources.
 
 That is the cleanest next step from the current state.
