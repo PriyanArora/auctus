@@ -30,7 +30,7 @@ This file should let a future assistant or developer understand:
 - It is **not** the authoritative phase tracker. `build/shared/buildflow.md` remains authoritative for phase order and gates.
 - It is **not** the authoritative ownership map. `build/shared/ownership.md` remains authoritative for folder, route, DB, and migration ownership.
 - It is **not** the authoritative typed contract source. `build/contracts/*.ts` remain authoritative for cross-domain types.
-- It is **not** the final word on ETL source selection yet. That topic is intentionally still pending.
+- ETL source selection is now **LOCKED-FOR-V2** (see §7.4); Dev B verifies robots.txt/ToS but does not re-open the list.
 
 Treat this file as the **best re-entry point**, then jump into the build docs for implementation.
 
@@ -223,7 +223,7 @@ Student:
 - institution
 - province
 - GPA optional
-- citizenship/residency if matching requires it
+- citizenship/residency — **excluded from V2 onboarding**; not part of `StudentProfile`. Adding it would require the contract change protocol. Until then, student matching does not depend on this field.
 
 Professor:
 
@@ -266,12 +266,13 @@ The product direction is agreed:
 - V2 should include `funding_preferences`
 - filters should be role-specific, not one generic set
 
-But the **exact field list per role is not locked yet** and needs a dedicated pass before implementation.
-Also not locked yet:
+**Onboarding field set: LOCKED 2026-04-26.** See `build/dev-a/buildflow.md` Step 2 task 1 for the per-role required-vs-deferred split. Summary:
 
-- which fields are mandatory during first-run onboarding
-- which fields should be deferred to later profile editing
-- how much friction is acceptable in the first-run experience
+- **Business required:** `display_name`, `business_name`, `industry`, `location`, `revenue`, `employees`. Deferred to `/profile/edit`: `description`, `year_established`, `website`.
+- **Student required:** `display_name`, `education_level`, `field_of_study`, `institution`, `province`, `gpa`. Deferred: `graduation_year`. Citizenship/residency is excluded from V2 (not in `StudentProfile`).
+- **Professor required:** `display_name`, `institution`, `department`, `research_area`, `career_stage`, `research_keywords`. Deferred: `h_index`.
+
+Adding any new onboarding field requires updating `build/contracts/profile.ts` first via the contract change protocol.
 
 ### 7.3 Authentication direction
 
@@ -318,29 +319,46 @@ For V2, auth is locked as:
 
 ### 7.4 ETL source selection
 
-The team discussed ETL source selection and agreed that this topic should remain open for now.
-
-#### Current status
-
-- source selection is intentionally **pending**
-- this can be researched later
-- Dev B can finalize specific sources closer to ETL implementation time
-
-#### What is already decided
-
-- ETL is part of V2
-- ETL writes normalized data into Supabase
-- the website reads from the normalized funding table, not from live scraped pages
-
-#### What is not yet locked
-
-- exact source websites
-- which sources are in the first V2 tranche
-- which sources are deferred
-
 #### Status
 
-`PENDING RESEARCH`
+`LOCKED-FOR-V2` (decided 2026-04-26)
+
+V2 uses **official Canadian government / public-sector sources only**. Private aggregators are explicitly rejected for V2 first-pass ETL.
+
+#### Locked V2 source list (6 total, 2 per role)
+
+**Business:**
+
+1. Innovation Canada / ISED **Business Benefits Finder** — https://ised-isde.canada.ca/site/innovation-canada/en/first-things-first/how-get-most-out-business-benefits-finder
+2. ISED **Supports for Business** — https://ised-isde.canada.ca/site/ised/en/supports-for-business
+
+**Student:**
+
+1. **EduCanada Scholarships** — https://www.educanada.ca/scholarships-bourses/non_can/index.aspx?lang=eng
+2. **Indigenous Bursaries Search Tool** — https://sac-isc.gc.ca/eng/1351185180120/1351685455328
+
+> Scope note: these two are an **official-source first pass for V2**, not full Canadian scholarship coverage. Provincial student-aid portals, university scholarship pages, and major non-government scholarship programs are deferred to a post-V2 ETL expansion.
+
+**Professor / research:**
+
+1. **NSERC Funding Opportunities** — https://nserc.canada.ca/en/funding/funding-opportunity
+2. **SSHRC Funding Opportunities** — https://sshrc-crsh.canada.ca/en/funding/opportunities.aspx
+
+#### CIHR
+
+Deferred to the first post-V2 ETL expansion. Many CIHR opportunities route through ResearchNet, which is more application-system oriented than NSERC/SSHRC. Re-evaluate if health-research professor coverage is later flagged as mandatory in V2.
+
+#### Explicitly rejected for V2 first-pass ETL
+
+GrantCompass, GrantHub, Yconic, ScholarshipsCanada, Canada Grants Database, and other private/commercial aggregators. Reasons: ToS / scraping risk, commercial database incentives, less authoritative than official sources, more likely to change markup, higher legal/product risk for V2. They may be useful for comparison or future licensed/partner data paths but are not first-pass scraper sources.
+
+#### What is already decided (still true)
+
+- ETL is part of V2.
+- ETL writes normalized data into Supabase.
+- The website reads from the normalized funding table, not from live scraped pages.
+- Every imported row carries `source_url`, `scraped_from`, `scraped_at`.
+- Per-source failures are isolated; the scraper logs per-source counts to `scrape_runs`.
 
 ---
 
@@ -665,7 +683,7 @@ This is important because:
 
 ### ETL source list status
 
-Still pending. Source research is deferred for now.
+`LOCKED-FOR-V2` (2026-04-26). See §7.4 for the six official sources, the rejected aggregator list, and the CIHR-deferred decision.
 
 ---
 
@@ -748,16 +766,11 @@ These are the main discussion topics that still need attention.
 
 ### Open Question 1: Final onboarding field set
 
-Need to reduce onboarding to the highest-signal fields so personalization is strong without making signup painful.
-
-This also includes the unresolved split between:
-
-- fields required during onboarding
-- fields captured later in profile editing
+`RESOLVED 2026-04-26.` Locked per-role required-vs-deferred split is documented in §7.2 and `build/dev-a/buildflow.md` Step 2 task 1.
 
 ### Open Question 2: ETL sources
 
-Still pending and intentionally not locked in this document.
+`RESOLVED 2026-04-26.` Source list locked in §7.4 to six official Canadian government sources (ISED ×2, EduCanada, Indigenous Bursaries, NSERC, SSHRC). CIHR deferred to post-V2.
 
 ---
 
@@ -776,8 +789,9 @@ Use these flags to recover the state of the project quickly.
 - `USP_DIRECTION: PERSONALIZED FUNDING DISCOVERY`
 - `PERSONALIZATION_MODEL: ONBOARDING + PROFILE + SAVED PREFERENCES + FILTERS`
 - `FILTER_COOKIES_AS_PRIMARY_STRATEGY: REJECTED`
-- `ONBOARDING_FIELDS_STATUS: PENDING_DISCUSSION`
-- `ONBOARDING_SCOPE_SPLIT_STATUS: PENDING_DISCUSSION`
+- `ONBOARDING_FIELDS_STATUS: LOCKED_FOR_V2 (2026-04-26)`
+- `ONBOARDING_SCOPE_SPLIT_STATUS: LOCKED_FOR_V2 (2026-04-26)`
+- `ONBOARDING_STUDENT_CITIZENSHIP_RESIDENCY: EXCLUDED_FROM_V2`
 - `ROLE_SPECIFIC_FILTERS_DIRECTION: YES`
 - `FUNDING_PREFERENCES_DIRECTION: LOCKED_INCLUDE_IN_V2`
 
@@ -793,8 +807,12 @@ Use these flags to recover the state of the project quickly.
 ### ETL direction
 
 - `ETL_INCLUDED_IN_V2: YES`
-- `ETL_SOURCE_LIST: PENDING`
-- `ETL_SOURCE_RESEARCH_OWNER_FOR_NOW: USER_LATER / DEV_B_AT_IMPLEMENTATION_TIME`
+- `ETL_SOURCE_LIST: LOCKED_FOR_V2 (2026-04-26)`
+- `ETL_SOURCES_BUSINESS: ISED_BUSINESS_BENEFITS_FINDER + ISED_SUPPORTS_FOR_BUSINESS`
+- `ETL_SOURCES_STUDENT: EDUCANADA_SCHOLARSHIPS + INDIGENOUS_BURSARIES_SEARCH_TOOL`
+- `ETL_SOURCES_PROFESSOR: NSERC + SSHRC`
+- `ETL_SOURCES_DEFERRED: CIHR (POST_V2)`
+- `ETL_PRIVATE_AGGREGATORS: REJECTED_FOR_V2`
 
 ### Architecture direction
 
