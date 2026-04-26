@@ -1,5 +1,17 @@
 # Auctus AI — Build Flow
 
+> Legacy V1 frontend-demo build flow.
+>
+> For the current V2 planning and execution docs, use:
+> - [build/gameplan.md](../build/gameplan.md)
+> - [build/shared/buildflow.md](../build/shared/buildflow.md)
+> - [build/shared/ownership.md](../build/shared/ownership.md)
+> - [build/shared/contracts.md](../build/shared/contracts.md) (pointer to `build/contracts/*.ts`)
+> - [build/shared/conventions.md](../build/shared/conventions.md)
+> - [build/shared/bootstrap.md](../build/shared/bootstrap.md)
+> - [build/dev-a/buildflow.md](../build/dev-a/buildflow.md)
+> - [build/dev-b/buildflow.md](../build/dev-b/buildflow.md)
+
 A phase is done when the checkpoint passes, not when the code is written.
 
 ---
