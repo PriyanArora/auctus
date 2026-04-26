@@ -1,8 +1,16 @@
 # Auctus AI — Progress Tracker
 
-Update this file as you complete each phase.
+> Legacy V1 frontend-demo progress tracker.
+>
+> For the current V2 tracking docs, use:
+> - [build/dev-a/progress.md](../build/dev-a/progress.md)
+> - [build/dev-b/progress.md](../build/dev-b/progress.md)
+> - [build/shared/buildflow.md](../build/shared/buildflow.md)
+> - [build/shared/bootstrap.md](../build/shared/bootstrap.md) (V2.P1 checklist)
 
-**Current Phase: V2 phases TBD — engineering spec complete, phase breakdown next session**
+Do not update this file. V2 progress is tracked in `build/dev-a/progress.md` and `build/dev-b/progress.md`.
+
+**Current Phase: V2.P1 — Shared Bootstrap & Restructuring (not started). See `build/shared/buildflow.md`.**
 
 ---
 
