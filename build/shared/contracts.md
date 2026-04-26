@@ -7,9 +7,9 @@ This file is the entry point for every cross-domain agreement in V2. Coordinatio
 | Concern | File | Section / Symbol |
 |---|---|---|
 | The role enum (`Role`, `ROLES`, `ROLE_DEFAULT_ROUTE`) | `build/contracts/role.ts` | whole file |
-| Profile shapes (`Profile`, `BusinessProfile`, `StudentProfile`, `ProfessorProfile`, `RoleProfile`) | `build/contracts/profile.ts` | whole file |
+| Profile shapes (`Profile` with nullable role, `OnboardedProfile`, `BusinessProfile`, `StudentProfile`, `ProfessorProfile`, `RoleProfile`) | `build/contracts/profile.ts` | whole file |
 | Session shape Dev B may read (`Session`, `GetSession`, `useSession`) | `build/contracts/session.ts` | whole file |
-| Funding shapes (`FundingItem`, `FundingQuery`, `FundingSummary`) and runtime function signatures (`ListFundingForRole`, `GetFundingById`, `GetFundingSummariesForUser`) | `build/contracts/funding.ts` | whole file |
+| Funding shapes (`FundingItem`, `FundingQuery`, `FundingSummary`, `FundingPreferences`) and runtime function signatures (`ListFundingForRole`, `GetFundingById`, `GetFundingSummariesForUser`, preference helpers) | `build/contracts/funding.ts` | whole file |
 | Per-route gating registry (`RoutePolicy`, `RoutePolicyRegistry`) | `build/contracts/route-policy.ts` | whole file |
 | Folder ownership (target tree, per-domain boundaries) | `build/shared/ownership.md` | "Folder Ownership (Target State)" |
 | Route ownership (per-route allowed roles) | `build/shared/ownership.md` | "Route Ownership" |
