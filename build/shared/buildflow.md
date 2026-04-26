@@ -13,6 +13,9 @@ Phases are numbered `V2.P1` through `V2.P5` to avoid collision with the legacy V
 - "Wait for the other dev" without a named deliverable is not a valid blocker.
 - Shared bootstrap (V2.P1) and integration (V2.P4) are the only legitimately coordination-heavy moments.
 - Most feature work happens inside owned domains.
+- All work merges to `develop` first; `main` only receives the `release: V2.PN complete` PR at each phase gate. See `build/shared/conventions.md` "Branching."
+- **Phase-gate semantics.** A phase is satisfied when (a) every checklist item below is `[x]` with proof on `develop`, and (b) the `release: V2.PN complete` PR from `develop` into `main` is green and merged. "Green on `main`" in any gate or handoff means "the release PR for this phase merged" — not "an arbitrary commit on `main`."
+- **Cross-phase handoffs** (e.g. Dev A's V2.P4 Step 5 waiting on Dev B's V2.P3 funding queries) trigger only after the upstream phase's `release: V2.PN complete` PR merges to `main`. Until then, the next phase has not started.
 
 ---
 
@@ -57,20 +60,23 @@ V2.P2 for both tracks.
 
 Both devs build skeletons inside their owned folders. No cross-domain code yet.
 
-### Dev A Track (see `build/dev-a/buildflow.md` Steps 2-3)
+### Dev A Track (see `build/dev-a/buildflow.md` Step 1)
 
 - Supabase auth wiring (sign-in, sign-out, callback).
+- Google OAuth plus email OTP / magic-link sign-in (providers configured in V2.P1 B6/B7). GitHub, Microsoft, and password auth stay deferred.
 - Session helpers in `lib/session/` publishing `Session`, `GetSession`, `UseSession`.
-- Migrations `0001_profiles.sql`, `0002_forum.sql` applied.
-- Empty route policy registry shipped (publishes `RoutePolicyRegistry`).
-- Profile pages scaffolded (no persistence yet).
+- Migration `0001_profiles_base.sql` applied for base profile (with nullable role) + session support. Role-specific profile tables and forum schema wait for V2.P3.
+- Route policy registry plumbing shipped (`authPolicies` populated; `combineRegistries` exposed; placeholder `lib/funding/route-policies.ts` exporting an empty registry so middleware does not crash before Dev B's Step 1 lands).
+- Profile pages scaffolded (no persistence yet — that lands in V2.P3 Step 2).
 
-### Dev B Track (see `build/dev-b/buildflow.md` Steps 2-3)
+### Dev B Track (see `build/dev-b/buildflow.md` Steps 1-2)
 
-- Migration `0003_funding.sql` applied (unified table, status enum, role-aware index).
-- `lib/funding/queries.ts` publishing `ListFundingForRole`, `GetFundingById`, `GetFundingSummariesForUser` against a small seed dataset.
-- Funding listing pages scaffolded under `app/(funding)/{grants,scholarships,research-funding}/page.tsx`. Show seed data, no auth gating yet.
-- `lib/funding/route-policies.ts` registers `/grants`, `/scholarships`, `/research-funding` per `RoutePolicy` shape.
+- Migration `0003_funding.sql` applied (unified `funding` table + `funding_preferences`, status enum, role-aware index).
+- `lib/funding/queries.ts` publishes `ListFundingForRole`, `GetFundingById`, `GetFundingSummariesForUser` against a seeded dataset (`supabase/seeds/funding_seed.sql`); `GetFundingSummariesForUser` returns recent items without scoring at this stage.
+- `lib/funding/preferences.ts` exposes read/upsert/clear helpers for `funding_preferences` (DB-backed; no cookie persistence).
+- `lib/funding/filter-definitions.ts` ships role-specific filter definitions consumed by `FundingFilters.tsx`.
+- Funding listing pages scaffolded under `app/(funding)/{grants,scholarships,research-funding}/page.tsx`. Show seed data; if `GetSession()` not yet on `develop`, hard-code the role per route as a temporary measure (replaced in a one-line follow-up).
+- `lib/funding/route-policies.ts` overwrites Dev A's V2.P2 placeholder with the real `fundingPolicies` registering `/grants` (business), `/scholarships` (student), `/research-funding` (professor) per `RoutePolicy` shape.
 
 ### Real Dependencies in V2.P2
 
@@ -84,9 +90,9 @@ That is it. There are no other true dependencies in V2.P2.
 
 ### Completion Gate
 
-- Dev A: sign-in works end to end on a fresh browser; profile pages render placeholder data.
-- Dev B: `/grants`, `/scholarships`, `/research-funding` render seed data; query helpers callable from a Vitest test.
-- Both: typecheck, lint, build, test all green on `main`.
+- Dev A: Google and email OTP / magic-link sign-in work end to end on a fresh browser; profile pages render placeholder data.
+- Dev B: `/grants`, `/scholarships`, `/research-funding` render seed data; query helpers callable from a Vitest test; saved funding preferences round-trip for a test user.
+- Both: typecheck, lint, build, test all green on `develop`, and the `release: V2.P2 complete` PR is green and merged to `main`.
 
 ### Unblocks
 
@@ -103,13 +109,14 @@ Real persistence inside each domain. Still no cross-domain code beyond the locke
 ### Dev A Core Delivery
 
 - Real role selection during onboarding.
+- First-run onboarding captures the locked minimum role-specific profile fields needed for matching; lower-priority fields can be deferred to profile editing.
 - `business_profiles`, `student_profiles`, `professor_profiles` migrations + persistence (Dev A Steps 3-4).
 - Real forum: `threads` + `replies` CRUD with real authorship.
 - Route protection live: `middleware.ts` consults the combined `RoutePolicyRegistry` and gates routes by role.
 
 ### Dev B Core Delivery
 
-- Real funding listing with role-aware filtering and detail page per type.
+- Real funding listing with role-aware filtering, saved defaults from `funding_preferences`, and detail page per type.
 - `lib/matching/` per-role match scoring functions reading `RoleProfile` (the LOCKED shape).
 - ETL pipeline: scrapers, normalize, dedupe, expire, upsert into `funding`.
 - `funding`-side RLS migrations applied.
@@ -119,11 +126,12 @@ Real persistence inside each domain. Still no cross-domain code beyond the locke
 
 | Dependency | What unblocks | Owner |
 |---|---|---|
-| `Profile` + `RoleProfile` LOCKED | Dev B's `lib/matching/` can score real users | Dev A → Dev B (already LOCKED in V2.P1 D2) |
-| Identity-side RLS landed (`0010_*`) | Dev B's funding RLS can reference `profiles.role` safely | Dev A → Dev B |
-| `funding` table seeded | Dev A's dashboard tile can call `GetFundingSummariesForUser` and get back rows during V2.P4 | Dev B → Dev A (consumed in V2.P4, not V2.P3) |
+| `Profile` + `RoleProfile` LOCKED | Dev B's `lib/matching/` can score real users | Dev A → Dev B (already LOCKED at V2.P1 D2) |
+| `lib/profile/queries.ts` `getRoleProfile` published | Dev B can wire `GetFundingSummariesForUser` to scoring (Dev B Step 3 task 5) | Dev A → Dev B |
+| `0010_rls_identity.sql` applied to shared dev DB | Dev B's funding RLS (`0020_rls_funding.sql`) can join `profiles.role` safely | Dev A → Dev B |
+| `funding` table populated by ETL | Dev A's dashboard tile can call `GetFundingSummariesForUser` and get back real rows during V2.P4 | Dev B → Dev A (consumed in V2.P4, not V2.P3) |
 
-Note: matching is technically gated on the LOCKED `Profile` shape, not on Dev A's persistence. Once the contract is locked, Dev B can implement matching against the type without waiting for Dev A's migrations to land in the dev DB.
+Note: matching tasks 1-4 (the unit-tested scorer functions) are gated only on the LOCKED `Profile` shape, not on Dev A's runtime helpers. Dev B can implement and unit-test matchers immediately upon entering V2.P3. Only the wiring of `GetFundingSummariesForUser` to scoring (task 5) needs `getRoleProfile` from Dev A.
 
 ### Completion Gate
 
@@ -147,18 +155,20 @@ Wire cross-domain features. The only phase where both devs intentionally edit sh
 
 | Target | Owner of composition | Consumes |
 |---|---|---|
-| Dashboard funding tiles | Dev A (composer) | Dev B's `GetFundingSummariesForUser` |
+| Dashboard funding summary tile | Dev A (composer) | Dev B's `GetFundingSummariesForUser` + `FundingSummaryTile` |
+| Dashboard expiring-deadlines tile | Dev A (composer) | Dev B's `GetFundingSummariesForUser` (filter on `deadline`) |
 | Role-aware navbar (funding link per role) | Dev A | `Role` enum + `ROLE_DEFAULT_ROUTE` |
 | Landing page CTAs | Dev A | none (static) |
 | Forum role badge on author | Dev A | `Profile.role` (already inside Dev A's domain) |
-| Funding RLS reading `profiles.role` | Dev B | `Profile` table (read-only) |
-| Real session in funding listing | Dev B | `GetSession` from Dev A |
+| Funding RLS reading `profiles.role` | Dev B | `profiles` table (read-only via SQL) |
+| Real session in funding listing | Dev B | `GetSession` from Dev A (replaces Step 2 hard-coded role) |
+| Saved funding preferences | Dev B | `funding_preferences` rows keyed by `user_id` + `role` |
 
 ### Required Handoffs
 
-- Dev A confirms: `Profile`, `Session`, `Role`, `RoutePolicyRegistry` are all LOCKED and stable on `main`.
-- Dev B confirms: `FundingItem`, `FundingQuery`, `FundingSummary`, `ListFundingForRole`, `GetFundingSummariesForUser`, `GetFundingById` are all stable on `main` with real data.
-- Both confirm: integration PRs land in this order — (1) Dev B publishes summary endpoint stable; (2) Dev A wires dashboard tile; (3) Dev A wires landing teaser if any.
+- Dev A confirms: `Profile`, `Session`, `Role`, `RoutePolicyRegistry` are all LOCKED and shipped on `main` via the V2.P3 release PR.
+- Dev B confirms: `FundingItem`, `FundingQuery`, `FundingSummary`, `ListFundingForRole`, `GetFundingSummariesForUser`, `GetFundingById` are shipped on `main` (via V2.P3 release) with real ETL data.
+- Both confirm: V2.P4 integration PRs target `develop` and land in this order — (1) Dev B publishes summary endpoint stable on `develop`; (2) Dev A wires dashboard tile on `develop`. The `release: V2.P4 complete` PR promotes both at once.
 
 ### Shared Files Likely Touched
 
@@ -171,12 +181,18 @@ Wire cross-domain features. The only phase where both devs intentionally edit sh
 
 A real user of each role can:
 
-1. Sign in with Google.
+1. Sign in with Google or email OTP / magic link.
 2. Land on their role-appropriate dashboard.
-3. See real funding summaries on the dashboard.
+3. See real funding summaries and expiring-deadlines tile on the dashboard.
 4. Click through to the funding listing for their role.
 5. Open a funding detail page and see real eligibility data.
 6. Open the forum, post a thread, get a reply, see the role badge.
+
+### What must NOT happen in V2.P4
+
+- No new fields added to `build/contracts/*.ts` without the change protocol.
+- No edits to the other dev's owned folders. Integration happens via published exports only.
+- No commits straight to `main`. The phase-completion `develop → main` PR is the only path.
 
 ### Unblocks
 
@@ -196,7 +212,7 @@ Stabilize the new core platform after integration.
 - ETL has a data-quality test (no funding row with `amount_min > amount_max`, no past-deadline rows with `status='active'`, etc.).
 - Demo behavior in active scope is removed (no V2 page imports from `lib/demo/` or `components/demo/`).
 - README updated with: env vars, dev setup, Supabase migration command, scraper run command.
-- Vercel env vars set in production.
+- Deployment env vars documented for later hosting setup. The repo is not currently deployed, so no Vercel production configuration is required in V2.P5.
 
 ### Owners
 
@@ -230,8 +246,11 @@ Stabilize the new core platform after integration.
 | `build/contracts/profile.ts` | type | V2.P1 |
 | `build/contracts/session.ts` | type | V2.P1 |
 | `build/contracts/route-policy.ts` | type | V2.P1 |
-| `lib/session/get-session.ts` | runtime export of `GetSession` | V2.P2 |
-| `supabase/migrations/0001_profiles.sql` applied | DB | V2.P2 |
+| `lib/session/get-session.ts` runtime export of `GetSession` | runtime | V2.P2 |
+| `lib/auth/route-policies.ts` runtime export of `combineRegistries` + placeholder `lib/funding/route-policies.ts` | runtime | V2.P2 |
+| `supabase/migrations/0001_profiles_base.sql` applied | DB | V2.P2 |
+| `lib/profile/queries.ts` runtime export of `getRoleProfile` | runtime | V2.P3 |
+| `supabase/migrations/0002_role_profiles.sql` applied | DB | V2.P3 |
 | `supabase/migrations/0010_rls_identity.sql` applied | DB | V2.P3 |
 
 ### Dev B → Dev A (named, by gate)
@@ -240,8 +259,13 @@ Stabilize the new core platform after integration.
 |---|---|---|
 | `build/contracts/funding.ts` | type | V2.P1 |
 | `lib/funding/queries.ts` exports `ListFundingForRole`, `GetFundingById`, `GetFundingSummariesForUser` | runtime | V2.P2 (against seed); V2.P3 (against real ETL data) |
-| `lib/funding/route-policies.ts` exports its registry | runtime | V2.P2 |
-| `supabase/migrations/0003_funding.sql` applied | DB | V2.P2 |
+| `lib/funding/route-policies.ts` exports `fundingPolicies` registry | runtime | V2.P2 |
+| `lib/funding/preferences.ts` exports preference helpers | runtime | V2.P2 |
+| `components/funding/FundingSummaryTile.tsx` (consumed by Dev A's dashboard) | runtime | V2.P2 (presentation); V2.P4 (wired with real data) |
+| `supabase/migrations/0003_funding.sql` applied (`funding` + `funding_preferences`) | DB | V2.P2 |
+| `docs(scraper): verify V2 ETL sources` PR merged (per-source robots.txt + ToS notes for the six already-locked sources) | docs | V2.P3 (before Step 4 implementation) |
+| `supabase/migrations/0004_scrape_metadata.sql` applied | DB | V2.P3 |
+| `supabase/migrations/0020_rls_funding.sql` applied | DB | V2.P3 |
 | `funding` table populated from ETL run | data | V2.P3 |
 
 ---
@@ -254,3 +278,12 @@ The project succeeds only if:
 - The shared buildflow contains only real prerequisites.
 - Ownership boundaries are respected.
 - Integration in V2.P4 happens through contracts, not opportunistic edits.
+
+## How Each Dev Knows They Are Done With A Phase
+
+A phase is done when:
+
+1. Every checkbox under the corresponding step in `build/dev-{a,b}/progress.md` is `[x]` with proof shown — not just code written.
+2. The "Completion Gate" section above for that phase is satisfied.
+3. The `develop → main` PR titled `release: V2.PN complete` has both devs' approvals.
+4. The merge into `main` is the canonical "phase shipped" event; only then can the next phase start.
