@@ -45,6 +45,16 @@ export interface FundingSummary {
   match_score: number | null; // 0-100, null if profile insufficient to score
 }
 
+export type FundingDefaultFilters = Record<string, unknown>;
+
+export interface FundingPreferences {
+  user_id: string; // UUID, references profiles.id / auth.users.id
+  role: Role;
+  default_filters: FundingDefaultFilters; // JSONB, validated by Dev B's role-specific filter definitions
+  created_at: string;
+  updated_at: string;
+}
+
 // Filter shape used by Dev B's listing pages and any dashboard query.
 // Role is required: matching and visibility both depend on it.
 export interface FundingQuery {
@@ -59,6 +69,9 @@ export interface FundingQuery {
 
 // Function signatures Dev B publishes from `lib/funding/queries.ts`.
 // These are the ONLY funding entry points Dev A may import.
+//
+// Match scoring is exposed ONLY via `FundingSummary.match_score`. Adding a score field
+// to `FundingItem` would be a contract change and require the protocol in README.md.
 export type ListFundingForRole = (
   query: FundingQuery,
 ) => Promise<FundingItem[]>;
@@ -69,3 +82,17 @@ export type GetFundingSummariesForUser = (
 ) => Promise<FundingSummary[]>;
 
 export type GetFundingById = (id: string) => Promise<FundingItem | null>;
+
+export type GetFundingPreferences = (
+  user_id: string,
+  role: Role,
+) => Promise<FundingPreferences | null>;
+
+export type UpsertFundingPreferences = (
+  preferences: Pick<FundingPreferences, "user_id" | "role" | "default_filters">,
+) => Promise<FundingPreferences>;
+
+export type ClearFundingPreferences = (
+  user_id: string,
+  role: Role,
+) => Promise<void>;
