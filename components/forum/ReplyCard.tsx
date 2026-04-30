@@ -1,18 +1,21 @@
 import { Clock, ThumbsUp, User } from "lucide-react";
 import Image from "next/image";
+import type { Role } from "@contracts/role";
 import { cn } from "@/lib/utils";
 
 interface ReplyCardProps {
   id: string;
   author: {
     name: string;
-    businessName: string;
+    role?: Role | null;
+    businessName?: string;
     avatar?: string;
   };
   content: string;
   timestamp: string;
   helpfulCount?: number;
   onHelpful?: () => void;
+  helpfulAction?: () => Promise<void>;
   isNested?: boolean;
 }
 
@@ -23,10 +26,12 @@ export default function ReplyCard({
   timestamp,
   helpfulCount = 0,
   onHelpful,
+  helpfulAction,
   isNested = false,
 }: ReplyCardProps) {
   return (
     <div
+      data-reply-id={id}
       className={cn(
         "bg-white rounded-lg border border-gray-200 p-5 transition-shadow duration-200",
         isNested ? "ml-8 bg-gray-50" : "hover:shadow-sm"
@@ -56,7 +61,15 @@ export default function ReplyCard({
           <div className="flex items-center gap-2">
             <span className="font-semibold text-gray-900">{author.name}</span>
             <span className="text-gray-400">•</span>
-            <span className="text-sm text-gray-600">{author.businessName}</span>
+            {author.role ? (
+              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+                {author.role}
+              </span>
+            ) : (
+              <span className="text-sm text-gray-600">
+                {author.businessName ?? "onboarding"}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
             <Clock className="h-3 w-3" />
@@ -74,7 +87,25 @@ export default function ReplyCard({
 
       {/* Footer Actions */}
       <div className="ml-13 flex items-center gap-4">
-        {onHelpful && (
+        {helpfulAction && (
+          <form action={helpfulAction}>
+            <button
+              type="submit"
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors duration-200",
+                helpfulCount > 0
+                  ? "bg-primary-50 text-primary-700 hover:bg-primary-100"
+                  : "text-gray-600 hover:bg-gray-100"
+              )}
+            >
+              <ThumbsUp className="h-4 w-4" />
+              <span className="font-medium">
+                {helpfulCount > 0 ? `Helpful (${helpfulCount})` : "Helpful"}
+              </span>
+            </button>
+          </form>
+        )}
+        {!helpfulAction && onHelpful && (
           <button
             onClick={onHelpful}
             className={cn(

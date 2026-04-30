@@ -1,19 +1,23 @@
 import { MessageSquare, Clock } from "lucide-react";
+import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import { cn } from "@/lib/utils";
+import type { Role } from "@contracts/role";
 
 interface ThreadCardProps {
   id: string;
   title: string;
   author: {
     name: string;
-    businessName: string;
+    role?: Role | null;
+    businessName?: string;
   };
   category: string;
   preview: string;
   tags: string[];
   replyCount: number;
   timestamp: string;
+  href?: string;
   onClick?: () => void;
 }
 
@@ -35,16 +39,18 @@ export default function ThreadCard({
   tags,
   replyCount,
   timestamp,
+  href,
   onClick,
 }: ThreadCardProps) {
   const categoryColor = (categoryColors[category] || "gray") as "blue" | "green" | "purple" | "orange" | "yellow" | "red" | "gray";
 
-  return (
+  const content = (
     <div
+      data-thread-id={id}
       onClick={onClick}
       className={cn(
         "bg-white rounded-lg border border-gray-200 p-6 shadow-sm transition-all duration-200",
-        onClick && "cursor-pointer hover:shadow-md hover:-translate-y-0.5"
+        (href || onClick) && "cursor-pointer hover:shadow-md hover:-translate-y-0.5"
       )}
     >
       {/* Header */}
@@ -56,7 +62,13 @@ export default function ThreadCard({
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span className="font-medium">{author.name}</span>
             <span className="text-gray-400">•</span>
-            <span>{author.businessName}</span>
+            {author.role ? (
+              <Badge variant="info" size="sm">
+                {author.role}
+              </Badge>
+            ) : (
+              <span>{author.businessName ?? "onboarding"}</span>
+            )}
           </div>
         </div>
         <Badge color={categoryColor} size="sm">
@@ -96,4 +108,6 @@ export default function ThreadCard({
       </div>
     </div>
   );
+
+  return href ? <Link href={href}>{content}</Link> : content;
 }

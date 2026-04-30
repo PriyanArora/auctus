@@ -1,10 +1,18 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
-import { Sparkles, Users, DollarSign, MessageSquare, Target, Briefcase } from "lucide-react";
+import { Sparkles, DollarSign, MessageSquare, Target, Briefcase } from "lucide-react";
+import { getSession } from "@/lib/session/get-session";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getSession();
+
+  if (session) {
+    redirect("/dashboard");
+  }
+
   const features = [
     {
       icon: DollarSign,
@@ -64,14 +72,14 @@ export default function Home() {
               Let AI guide your growth journey.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/dashboard">
+              <Link href="/sign-in">
                 <Button size="lg" variant="primary">
                   Get Started
                 </Button>
               </Link>
-              <Link href="/funding">
+              <Link href="/sign-in">
                 <Button size="lg" variant="outline">
-                  Explore Grants
+                  Sign In
                 </Button>
               </Link>
             </div>
@@ -205,7 +213,7 @@ export default function Home() {
           <p className="text-xl text-gray-600 mb-8">
             Join Fredericton's premier business growth platform today.
           </p>
-          <Link href="/dashboard">
+          <Link href="/sign-in">
             <Button size="lg" variant="secondary">
               Get Started Now
             </Button>

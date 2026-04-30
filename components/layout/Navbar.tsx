@@ -3,60 +3,54 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useBusiness } from "@/lib/demo/BusinessContext";
-import { Business } from "@/lib/demo/data";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { ROLE_DEFAULT_ROUTE } from "@contracts/role";
+import Button from "@/components/ui/Button";
+import { useAuth } from "@/app/providers";
 import { cn } from "@/lib/utils";
 
-const navigationLinks = [
-  { name: "Dashboard", href: "/dashboard" },
-  { name: "Forum", href: "/forum" },
-  { name: "Funding", href: "/funding" },
-  { name: "Matchmaker", href: "/matchmaker" },
-  { name: "Talent", href: "/talent" },
-];
+function navForRole(role: keyof typeof ROLE_DEFAULT_ROUTE | null) {
+  if (!role) {
+    return [
+      { name: "Home", href: "/" },
+      { name: "Sign in", href: "/sign-in" },
+    ];
+  }
+
+  return [
+    { name: "Dashboard", href: "/dashboard" },
+    { name: "Forum", href: "/forum" },
+    { name: "Funding", href: ROLE_DEFAULT_ROUTE[role] },
+  ];
+}
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { currentBusiness, businesses, setCurrentBusiness } = useBusiness();
+  const { session, loading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isBusinessDropdownOpen, setIsBusinessDropdownOpen] = useState(false);
+  const links = navForRole(session?.role ?? null);
 
-  const isActivePath = (href: string) => pathname === href;
-
-  // Guard against null currentBusiness during initialization
-  if (!currentBusiness) {
-    return null;
-  }
-
-  const handleBusinessSwitch = (businessId: string) => {
-    setCurrentBusiness(businessId);
-    setIsBusinessDropdownOpen(false);
-    setIsMobileMenuOpen(false);
-  };
+  const isActivePath = (href: string) =>
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-2 sm:gap-4">
-          {/* Logo */}
-          <Link href="/" className="flex items-center min-w-0 flex-shrink">
-            <span className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 whitespace-nowrap">
-              Auctus AI
-            </span>
+    <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between gap-4">
+          <Link href="/" className="flex items-center">
+            <span className="text-xl font-bold text-gray-900">Auctus AI</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
-            {navigationLinks.map((link) => (
+          <div className="hidden items-center gap-1 md:flex">
+            {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                  "rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
                   isActivePath(link.href)
                     ? "bg-gray-100 text-gray-900"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
                 )}
               >
                 {link.name}
@@ -64,55 +58,30 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Business Switcher - Desktop */}
-          <div className="hidden md:block relative">
-            <button
-              onClick={() => setIsBusinessDropdownOpen(!isBusinessDropdownOpen)}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors duration-200"
-            >
-              <span className="text-sm font-medium text-gray-900">
-                {currentBusiness.name}
+          <div className="hidden items-center gap-3 md:flex">
+            {!loading && session?.role && (
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                {session.role}
               </span>
-              <ChevronDown className="h-4 w-4 text-gray-500" />
-            </button>
-
-            {/* Dropdown Menu */}
-            {isBusinessDropdownOpen && (
-              <>
-                {/* Backdrop */}
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setIsBusinessDropdownOpen(false)}
-                />
-                
-                {/* Dropdown */}
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
-                  {businesses.map((business: Business) => (
-                    <button
-                      key={business.id}
-                      onClick={() => handleBusinessSwitch(business.id)}
-                      className={cn(
-                        "w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors duration-150",
-                        currentBusiness.id === business.id && "bg-gray-100"
-                      )}
-                    >
-                      <div className="font-medium text-gray-900">
-                        {business.name}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {business.industry} • {business.location}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </>
+            )}
+            {!loading && session ? (
+              <form action="/sign-out" method="post">
+                <Button type="submit" variant="outline" size="sm">
+                  Sign out
+                </Button>
+              </form>
+            ) : (
+              !loading && (
+                <Link href="/sign-in">
+                  <Button size="sm">Sign in</Button>
+                </Link>
+              )
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2.5 rounded-lg hover:bg-gray-100 transition-colors active:bg-gray-200"
+            className="rounded-lg p-2.5 transition-colors hover:bg-gray-100 md:hidden"
             aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? (
@@ -124,83 +93,33 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-
-          {/* Slide-out Menu */}
-          <div className="fixed top-0 right-0 bottom-0 w-64 bg-white shadow-xl z-50 md:hidden">
-            <div className="flex flex-col h-full">
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <span className="text-xl font-bold text-gray-900">
-                  Auctus AI
-                </span>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100"
-                  aria-label="Close menu"
-                >
-                  <X className="h-5 w-5 text-gray-700" />
-                </button>
-              </div>
-
-              {/* Business Switcher - Mobile */}
-              <div className="p-4 border-b border-gray-200">
-                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                  Current Business
-                </div>
-                <div className="space-y-2">
-                  {businesses.map((business: Business) => (
-                    <button
-                      key={business.id}
-                      onClick={() => handleBusinessSwitch(business.id)}
-                      className={cn(
-                        "w-full text-left px-3 py-2 rounded-lg transition-colors duration-150",
-                        currentBusiness.id === business.id
-                          ? "bg-gray-100 border-2 border-gray-900"
-                          : "bg-gray-50 hover:bg-gray-100 border-2 border-transparent"
-                      )}
-                    >
-                      <div className="font-medium text-sm text-gray-900">
-                        {business.name}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {business.industry}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Navigation Links - Mobile */}
-              <div className="flex-1 overflow-y-auto p-4">
-                <div className="space-y-1">
-                  {navigationLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={cn(
-                        "block px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-150",
-                        isActivePath(link.href)
-                          ? "bg-gray-100 text-gray-900"
-                          : "text-gray-700 hover:bg-gray-100"
-                      )}
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
+        <div className="border-t border-gray-200 bg-white p-4 md:hidden">
+          <div className="space-y-1">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={cn(
+                  "block rounded-lg px-4 py-3 text-sm font-medium",
+                  isActivePath(link.href)
+                    ? "bg-gray-100 text-gray-900"
+                    : "text-gray-700 hover:bg-gray-100",
+                )}
+              >
+                {link.name}
+              </Link>
+            ))}
           </div>
-        </>
+          {!loading && session && (
+            <form action="/sign-out" method="post" className="mt-3">
+              <Button type="submit" variant="outline" className="w-full">
+                Sign out
+              </Button>
+            </form>
+          )}
+        </div>
       )}
     </nav>
   );
