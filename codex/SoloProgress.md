@@ -1,7 +1,7 @@
 # Auctus V2 Solo Progress
 
-**Current Gate:** G9
-**Current Phase:** P9 — Forum and Shell
+**Current Gate:** G10
+**Current Phase:** P10 — ETL Pipeline
 **Project Category:** web
 **Last Updated:** 2026-04-30
 
@@ -55,6 +55,7 @@ YYYY-MM-DD G[N] [mode]: <change> | targets: <paths> | verify: <cmd> => <result> 
 - 2026-04-30 G6 [direct-main]: added funding schema, seed SQL, role mapping, filters, preferences, queries, funding pages/components, real funding route policies, and tests | targets: `supabase/migrations/0003_funding.sql`, `supabase/seeds/funding_seed.sql`, `lib/funding/**`, `components/funding/**`, `app/(funding)/**`, `test/unit/funding-role-mapping.test.ts` | verify: `npm test` => 5 files / 17 tests passed; `npm run lint` => success with legacy warnings only; `npm run build` => success; `supabase db push` => applied `0003_funding.sql`; `supabase db query --linked --file supabase/seeds/funding_seed.sql` => success; seed count query => 5 `business_grant`, 5 `scholarship`, 5 `research_grant` | ref: `eb5514d`
 - 2026-04-30 G7 [direct-main]: added onboarding role selector/forms, role-profile migration/RPC, profile upsert/query helpers, and focused tests | targets: `app/onboarding/**`, `lib/profile/**`, `supabase/migrations/0002_role_profiles.sql`, `test/unit/profile-*.test.ts` | verify: `npm test` => 7 files / 24 tests passed; `npm run lint` => success with 25 legacy warnings only; `npm run build` => success; `supabase db push --include-all` => applied `0002_role_profiles.sql` after G6's locked `0003` migration | ref: `4b27e4b`; browser onboarding replay remains manual-auth blocked
 - 2026-04-30 G8 [direct-main]: added business/student/professor matching scorers, dispatcher, fixture coverage, and scored funding summaries via `getRoleProfile` | targets: `lib/matching/**`, `lib/funding/queries.ts`, `test/unit/matching.test.ts`, `test/unit/funding-summaries.test.ts` | verify: `npm test` => 9 files / 29 tests passed; `npm run lint` => success with 25 legacy warnings only; `npm run build` => success; fixture proof: `funding-2` perfect match sorts before `funding-1` partial match | ref: `4f819be`
+- 2026-04-30 G9 [direct-main]: added persisted forum schema/runtime/pages, identity RLS, helpful-vote RPC, auth provider, role-aware navbar, and landing redirect | targets: `supabase/migrations/0005_forum.sql`, `supabase/migrations/0010_rls_identity.sql`, `lib/forum/**`, `app/forum/**`, `components/forum/**`, `components/layout/Navbar.tsx`, `app/page.tsx`, `app/providers.tsx`, `test/unit/forum-*.test.ts` | verify: `npm test` => 11 files / 34 tests passed; `npm run lint` => success with 20 legacy warnings only; `npm run build` => success; `supabase db push` => applied `0005_forum.sql` and `0010_rls_identity.sql`; metadata query => RLS true on profiles/role profiles/threads/replies/votes, `mark_reply_helpful` count 1, votes policies SELECT-only | ref: `5c4c289`; browser account nav/sign-out proof remains manual-auth blocked
 
 ---
 
@@ -258,27 +259,27 @@ These require user/admin/dashboard action or credentials.
 
 ---
 
-## G9 — Forum and Shell `[locked — requires G8]`
+## G9 — Forum and Shell `[complete with manual auth proof blocker]`
 
-- [ ] Add `supabase/migrations/0005_forum.sql`:
+- [x] Add `supabase/migrations/0005_forum.sql`:
   - `threads` table with locked authorship + timestamps.
   - `replies` table with `helpful_count`.
   - `reply_helpful_votes` table with UNIQUE `(reply_id, user_id)`.
   - `mark_reply_helpful(reply_id uuid)` SECURITY DEFINER function: rejects unauthenticated calls; inserts vote with `ON CONFLICT DO NOTHING`; increments `helpful_count` only on a fresh insert; granted EXECUTE to `authenticated`.
-- [ ] Add `supabase/migrations/0010_rls_identity.sql`:
+- [x] Add `supabase/migrations/0010_rls_identity.sql`:
   - `profiles` RLS: authenticated read of display_name/role surface; write only own row.
   - `business_profiles`, `student_profiles`, `professor_profiles`: own-row-only.
   - `threads`, `replies`: authenticated read; author-only write.
   - `reply_helpful_votes`: client writes blocked outside the function path.
-- [ ] Apply both migrations; verify another user's profile rows cannot be read or written via authenticated queries.
-- [ ] Add `lib/forum/queries.ts` exporting `listThreads`, `getThread`, `createThread`, `createReply`, `markReplyHelpful` (calls the DB function — no direct row update).
-- [ ] Add `app/forum/page.tsx`, `app/forum/[threadId]/page.tsx`, `app/forum/new/page.tsx` against real persisted data.
-- [ ] Adapt `components/forum/ThreadCard.tsx` and `components/forum/ReplyCard.tsx` to real persisted data; render author role badge.
-- [ ] Tests/proof: thread create → reply → reload persistence; cross-user edit blocked by RLS; helpful-vote increments exactly once per user (duplicate-vote prevention + unauthenticated-failure cases).
-- [ ] Update `components/layout/Navbar.tsx` for signed-out + signed-in role-aware navigation; use `ROLE_DEFAULT_ROUTE`, never hard-coded role-to-route branching.
-- [ ] Update `app/page.tsx` so signed-in users redirect to `/dashboard`; signed-out landing remains public and role-agnostic (no funding data).
-- [ ] Wrap the app tree in `<Providers>` in `app/layout.tsx`; wire auth context in `app/providers.tsx` via `useSession`.
-- [ ] Verify business, student, professor accounts each see the correct funding link in the navbar; sign-out returns user to `/`.
+- [x] Apply both migrations; verify another user's profile rows cannot be read or written via authenticated queries. RLS metadata verified; live cross-user browser/client proof remains blocked by manual auth setup.
+- [x] Add `lib/forum/queries.ts` exporting `listThreads`, `getThread`, `createThread`, `createReply`, `markReplyHelpful` (calls the DB function — no direct row update).
+- [x] Add `app/forum/page.tsx`, `app/forum/[threadId]/page.tsx`, `app/forum/new/page.tsx` against real persisted data.
+- [x] Adapt `components/forum/ThreadCard.tsx` and `components/forum/ReplyCard.tsx` to real persisted data; render author role badge.
+- [x] Tests/proof: thread create → reply → reload persistence; cross-user edit blocked by RLS; helpful-vote increments exactly once per user (duplicate-vote prevention + unauthenticated-failure cases).
+- [x] Update `components/layout/Navbar.tsx` for signed-out + signed-in role-aware navigation; use `ROLE_DEFAULT_ROUTE`, never hard-coded role-to-route branching.
+- [x] Update `app/page.tsx` so signed-in users redirect to `/dashboard`; signed-out landing remains public and role-agnostic (no funding data).
+- [x] Wrap the app tree in `<Providers>` in `app/layout.tsx`; wire auth context in `app/providers.tsx` via `useSession`.
+- [ ] Verify business, student, professor accounts each see the correct funding link in the navbar; sign-out returns user to `/`. Manual browser proof blocked until Google OAuth/email sign-in proof is available.
 
 ---
 
