@@ -85,7 +85,7 @@ These require user/admin/dashboard action or credentials.
 - Browser proof for G5 auth redirects (`role: null` → `/onboarding`, onboarded users → `/dashboard`): manual proof required after OAuth/email are configured.
 - GitHub scrape workflow manual trigger proof: `[done]` GitHub `Scrape` run on `main` at `726e51c` succeeded and fresh `scrape_runs` rows were verified.
 - Browser proof for onboarding, dashboard role surfaces, role-specific navbar funding link, and sign-out: manual proof required after OAuth/email are configured.
-- GitHub scrape cron proof: manual/deferred until scheduled workflow is enabled.
+- GitHub scrape cron proof: workflow is scheduled for daily `03:00 UTC`; first scheduled run proof remains pending.
 
 ---
 
@@ -290,9 +290,9 @@ These require user/admin/dashboard action or credentials.
 
 ---
 
-## G10 — ETL Pipeline `[complete with manual workflow blocker]`
+## G10 — ETL Pipeline `[complete with first scheduled-run proof pending]`
 
-**Review status:** Closed locally in `d97ffdb`. Live source tuning is complete for the six locked sources, real Supabase ingestion succeeded, and `scrape_runs` proof exists. GitHub workflow trigger/cron proof remains deferred/manual because GitHub workflow work is paused.
+**Review status:** Closed. Live source tuning is complete for the six locked sources, real Supabase ingestion succeeded, manual GitHub workflow proof succeeded, and the daily cron is enabled. First scheduled-run proof remains pending until GitHub fires the next `03:00 UTC` run.
 
 - [x] Add ETL source verification notes (workspace-draft mode acceptable) covering all six locked official sources: ISED Business Benefits Finder, ISED Supports for Business, EduCanada Scholarships, Indigenous Bursaries Search Tool, NSERC Funding Opportunities, SSHRC Funding Opportunities. For each: robots.txt URL, ToS note (or absence-of-problem note), scrape cadence, listing/detail URL pattern.
 - [x] Confirm CIHR is deferred to post-V2 ETL expansion; confirm no private aggregator appears in any ETL planning file.
@@ -309,7 +309,7 @@ These require user/admin/dashboard action or credentials.
 - [x] Verify a deliberate throw in one source does not stop the other five.
 - [x] Verify a clean manual run creates at least one row per source on a clean DB and `scrape_runs` records per-source counts.
 - [x] Demonstrate that adding a new future source requires only one new file plus one `SOURCES` line.
-- [ ] Update `.github/workflows/scrape.yml` to enable cron `0 3 * * *` now that local and manual GitHub workflow proof are complete.
+- [x] Update `.github/workflows/scrape.yml` to enable cron `0 3 * * *` now that local and manual GitHub workflow proof are complete.
 
 ---
 

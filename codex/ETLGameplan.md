@@ -6,7 +6,7 @@ This document is the practical checklist for finishing the ETL work without mixi
 
 ## Current State
 
-G10 is now complete locally as `d97ffdb`. Claude's original scaffold was tuned against live official pages, rate limiting was added, and real Supabase ingestion proof was captured.
+G10 is now complete. Claude's original scaffold was tuned against live official pages, rate limiting was added, real Supabase ingestion proof was captured, and the GitHub scrape workflow was manually proven clean.
 
 Observed review result:
 
@@ -17,7 +17,7 @@ Observed review result:
 - `npx tsx index.ts --dry-run` returned 566 rows across all six sources with 0 errors.
 - Real `npx tsx index.ts` inserted/updated rows and recorded successful `scrape_runs` for all six sources.
 
-The ETL pipeline should not be scheduled automatically until a GitHub manual workflow run is also proven clean.
+The ETL pipeline is scheduled to run daily at `03:00 UTC`, with `workflow_dispatch` still available for manual runs.
 
 ## What You Need To Do
 
@@ -27,8 +27,8 @@ You do not need to code the scraper. The local code-side G10 work is done.
 
 You may need to help with these items:
 
-1. Let me trigger or guide you through one GitHub manual workflow run if you want GitHub workflow proof.
-2. Decide when automatic cron scraping should be enabled.
+1. Confirm the first scheduled GitHub run succeeds after the cron fires.
+2. Keep an eye on Supabase row counts and GitHub Actions usage if the scrape cadence is increased later.
 
 ### Manual Dashboard/Admin Items
 
@@ -37,7 +37,7 @@ These are not code tasks and need either your browser access or your credentials
 1. Google OAuth setup in Google Cloud and Supabase.
 2. Email magic-link inbox proof.
 3. Browser proof of sign-in, onboarding, dashboard, navbar, and sign-out.
-4. GitHub scrape workflow trigger/cron proof, if GitHub workflow work is allowed.
+4. GitHub scrape cron proof after the first scheduled run.
 
 ## What I Can Do
 
@@ -53,7 +53,7 @@ The code side of G10 is complete:
 6. Verified `funding_sources` and `scrape_runs`.
 7. Updated `codex/SoloProgress.md` and `codex/Handoff.md`.
 
-Remaining G10-adjacent manual item: GitHub scrape workflow trigger/cron proof.
+Remaining G10-adjacent manual item: first scheduled cron run proof.
 
 ### G11 — RLS and Dashboard Integration
 
@@ -95,20 +95,11 @@ You still need to do:
 1. G10 is committed as `d97ffdb`.
 2. Finish and verify G11.
 3. Then finish and verify G12.
-4. Only enable scheduled scraping after one manual GitHub scraper run is clean.
+4. Scheduled scraping is now enabled; confirm the first automatic run after it fires.
 
 ## GitHub Actions Scrape Setup
 
 Current scrape workflow:
-
-```yaml
-on:
-  workflow_dispatch:
-```
-
-This means manual only. It does not scrape automatically yet.
-
-Future scheduled version:
 
 ```yaml
 on:
@@ -117,15 +108,30 @@ on:
   workflow_dispatch:
 ```
 
-That would run daily at 03:00 UTC.
+This means the scraper runs daily at `03:00 UTC`, and can still be run manually from the GitHub Actions tab.
 
-Do not enable this cron until:
+## Cost And Limits
+
+Daily scraping is expected to be very small:
+
+- The proven GitHub run took about 1 minute 40 seconds.
+- One daily run is roughly 50 GitHub Actions minutes per month.
+- Public repositories can use standard GitHub-hosted runners for free.
+- Private repositories have included monthly minutes before billing; check the GitHub billing page if the repo is private or the cadence is increased.
+- Supabase impact should be small: six `scrape_runs` rows per day plus mostly skipped/updated funding rows after the first seed.
+
+Cost risk appears only if the project exceeds GitHub Actions/Supabase quotas, if larger runners are used, or if the schedule is changed from daily to frequent scraping.
+
+## Cron Proof Checklist
+
+Cron was enabled after:
 
 1. local dry-run returns real rows; `[done]`
 2. real Supabase ingestion succeeds; `[done]`
-3. one manual GitHub workflow run succeeds;
-4. `scrape_runs` records sane counts in the GitHub-run context.
+3. one manual GitHub workflow run succeeds; `[done]`
+4. `scrape_runs` records sane counts in the GitHub-run context; `[done]`
+5. first scheduled GitHub run succeeds; `[pending]`
 
 ## Immediate Next Step
 
-Move to G11. First concrete task: fix dashboard date-only deadline filtering, then validate/apply funding RLS.
+Finish the remaining manual/admin proof: OAuth, email magic-link, browser walkthrough, and first scheduled cron run.

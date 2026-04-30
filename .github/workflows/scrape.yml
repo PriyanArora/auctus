@@ -1,11 +1,13 @@
 name: Scrape
 
 on:
+  schedule:
+    - cron: "0 3 * * *"
   workflow_dispatch:
 
 jobs:
   scrape:
-    name: Scraper bootstrap
+    name: Scraper ETL
     runs-on: ubuntu-latest
 
     env:
@@ -15,12 +17,13 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
+          package-manager-cache: false
 
       - name: Verify secrets are present
         shell: bash
@@ -30,7 +33,7 @@ jobs:
           test -n "$SUPABASE_SERVICE_ROLE_KEY"
           echo "Supabase secrets are configured"
 
-      - name: Run scraper bootstrap
+      - name: Run scraper ETL
         run: |
           cd scraper
           npm ci

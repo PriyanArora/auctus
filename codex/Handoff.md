@@ -28,6 +28,7 @@ Implementation is now continuing directly on `main` per user instruction. Do not
 - G11 added funding RLS migration, dashboard funding summary/deadline/forum tiles, date-only deadline filtering, and dashboard/RLS SQL tests as `ef71229`.
 - G12 isolated demo provider usage, moved `middleware.ts` to the Next 16 `proxy.ts` convention, added scraper quality checks, refreshed docs, and completed final QA as `7c1c6de`.
 - GitHub `Scrape` workflow manual proof succeeded on `main` at `726e51c`; fresh `scrape_runs` rows were verified in Supabase.
+- Scrape workflow cron is enabled for daily `03:00 UTC` runs; first scheduled-run proof is still pending.
 - Post-G9 fix pinned `turbopack.root` in `next.config.ts` so Next resolves `@/*` imports from the root project instead of the nested archived `auctus-frontend/` duplicate.
 - Post-G9 fix updated `lib/env.ts` so browser code reads `NEXT_PUBLIC_*` values through static `process.env.NEXT_PUBLIC_*` references instead of dynamic key lookup.
 
@@ -93,9 +94,9 @@ Known build warnings:
 - Email OTP / magic-link deliverability still needs inbox proof.
 - Fresh-browser auth redirect proof remains blocked until OAuth/email are configured.
 - Business/student/professor navbar funding-link and sign-out browser proof remain blocked until OAuth/email are configured.
-- GitHub scrape workflow manual trigger proof is `[done]` at commit `726e51c`; cron enablement remains optional/deferred.
+- GitHub scrape workflow manual trigger proof is `[done]` at commit `726e51c`; cron is enabled and first scheduled-run proof remains pending.
 - Live browser proof for onboarding, dashboard role surfaces, and funding RLS remains blocked until OAuth/email sign-in works.
-- Enabling and proving the GitHub scrape cron remains optional/deferred.
+- Proving the first scheduled GitHub scrape cron run remains pending.
 
 ## Codex-Doable Follow-Ups
 
@@ -113,5 +114,5 @@ Known build warnings:
 
 Next action:
 
-1. Handle manual/admin proof: Google OAuth, email magic-link, browser auth/onboarding/dashboard walkthrough, and optional GitHub scrape cron.
+1. Handle manual/admin proof: first scheduled GitHub scrape cron run, Google OAuth, email magic-link, and browser auth/onboarding/dashboard walkthrough.
 2. Then pick standalone product follow-ups from `issues.md` if desired.
