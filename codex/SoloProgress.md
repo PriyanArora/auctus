@@ -59,6 +59,7 @@ YYYY-MM-DD G[N] [mode]: <change> | targets: <paths> | verify: <cmd> => <result> 
 - 2026-04-30 review: Claude-added uncommitted G10-G12 scaffold passed local unit/lint/build/type checks, but G10 remained open because live scraper dry-run fetched 0 rows from four sources and fetch failed for two sources; selectors were documented as speculative; rate limiting was not enforced; dashboard deadline date comparison still needs a date-only fix before G11 closes.
 - 2026-04-30 G10 [direct-main]: added live-tuned ETL pipeline, source verification notes, scraper CLI/dry-run, utility/normalize/dedupe/expire/supabase stores, six official source modules, scrape metadata migration, fixture/unit tests, rate-limit delays, and real Supabase ingestion proof | targets: `scraper/**`, `supabase/migrations/0004_scrape_metadata.sql`, `test/unit/scraper-*.test.ts`, `package.json`, `package-lock.json` | verify: `npx tsx index.ts --dry-run` => 6 sources / 566 rows / 0 errors; real `npx tsx index.ts` with local Supabase env => `ised-benefits-finder` 6 inserted, `ised-supports` 14 inserted, `educanada` 7 inserted, `indigenous-bursaries` 517 fetched / 478 inserted / 39 updated, `nserc` 20 inserted, `sshrc` 2 inserted, expire 0; Supabase query => latest six `scrape_runs` all `success`, scraped funding counts 20 `business_grant`, 485 `scholarship`, 22 `research_grant`; `npm test` => 21 files / 101 tests passed; `npm run lint` => success with 20 legacy warnings only; `npm run build` => success; `npx tsc -p scraper/tsconfig.json --noEmit` => success | ref: `d97ffdb`; GitHub scrape cron/manual workflow proof remains deferred/manual
 - 2026-04-30 G11 [direct-main]: added funding RLS migration, dashboard funding summary/deadline/forum composition, date-only deadline filtering, and focused SQL/composer tests | targets: `supabase/migrations/0020_rls_funding.sql`, `app/dashboard/page.tsx`, `components/dashboard/**`, `lib/dashboard/composer.ts`, `test/unit/dashboard-composer.test.ts`, `test/unit/funding-rls-sql.test.ts` | verify: `npx supabase db push` => remote database up to date; metadata query => RLS true on `funding`, `funding_preferences`, `funding_sources`, `scrape_runs`; policy query => funding SELECT only, funding_preferences SELECT/INSERT/UPDATE/DELETE, no authenticated policies on source/run tables; `npm test -- --run test/unit/dashboard-composer.test.ts test/unit/funding-rls-sql.test.ts` => 2 files / 15 tests passed; `npm test` => 21 files / 102 tests passed; `npm run lint` => success with 20 legacy warnings only; `npm run build` => success | ref: `ef71229`; browser/two-role proof remains manual-auth blocked
+- 2026-04-30 G12 [direct-main]: isolated demo provider usage, moved middleware convention to `proxy.ts`, added scraper data-quality checks/tests, refreshed README/Supabase/scraper docs, ignored `.claude/`, and completed final QA | targets: `.gitignore`, `README.md`, `app/(demo)/layout.tsx`, `app/layout.tsx`, `app/providers.tsx`, `components/demo/ChatbotWrapper.tsx`, `components/layout/Navbar.tsx`, `lib/auth/route-policies.ts`, `lib/demo/data.ts`, `lib/session/use-session.ts`, `proxy.ts`, `scraper/README.md`, `scraper/quality.ts`, `supabase/README.md`, `test/unit/scraper-quality.test.ts` | verify: demo import audit => only `app/(demo)/**`, `components/demo/**`, and documented `app/layout.tsx` chatbot exception; data-quality SQL => 0 `amount_range`, 0 `active_past_deadline`, 0 `scraped_missing_metadata`; `npm test` => 21 files / 102 tests passed; `npm run lint` => success with 20 legacy warnings only; `npm run build` => success; `npx tsc -p scraper/tsconfig.json --noEmit` => success | ref: `7c1c6de`; final browser/OAuth/email/GitHub workflow proofs remain manual
 
 ---
 
@@ -341,16 +342,16 @@ These require user/admin/dashboard action or credentials.
 
 ---
 
-## G12 — Hardening and Release QA `[locked — requires G11]`
+## G12 — Hardening and Release QA `[complete with manual admin/browser blockers]`
 
-**Review status:** Claude added uncommitted hardening/docs/tests, but this gate stays locked until G10 and G11 close. Codex-doable work: keep `.claude/settings.local.json` untracked, verify demo-import audit, run final data-quality checks, update docs/proof logs, and commit in gate order. Manual work: final browser walkthrough and GitHub scrape workflow proof remain external/manual.
+**Review status:** Closed locally in `7c1c6de`. Code/docs/tests are complete. Final browser walkthrough, OAuth/email proof, and GitHub scrape workflow proof remain external/manual.
 
-- [ ] Grep active app code for imports from `lib/demo` and `components/demo` (outside `app/(demo)/**`); remove any leaks.
-- [ ] Audit remaining flows for demo-only alerts or fake persistence.
-- [ ] Add data-quality assertions: fail when `amount_min > amount_max`; fail when `status='active'` on a past-deadline row; ensure scraped rows preserve `source_url`, `scraped_from`, `scraped_at`.
-- [ ] Run data-quality checks on the shared dev DB.
-- [ ] Add missing tests for: auth callback path, onboarding upsert, `getRoleProfile`, forum CRUD, dashboard composer, `mark_reply_helpful` duplicate-prevention, scraper utilities, source-module fixtures.
-- [ ] Update `README.md`, `supabase/README.md`, and `scraper/README.md` (env vars, run command, expected output, migration expectations).
-- [ ] Run `npm run lint`, `npm run build`, `npm test`, scraper tests — all green.
-- [ ] Record final QA checklist and any unresolved manual deployment/admin notes.
-- [ ] Final commit reference recorded in Proof Log.
+- [x] Grep active app code for imports from `lib/demo` and `components/demo` (outside `app/(demo)/**`); remove any leaks.
+- [x] Audit remaining flows for demo-only alerts or fake persistence.
+- [x] Add data-quality assertions: fail when `amount_min > amount_max`; fail when `status='active'` on a past-deadline row; ensure scraped rows preserve `source_url`, `scraped_from`, `scraped_at`.
+- [x] Run data-quality checks on the shared dev DB.
+- [x] Add missing tests for: onboarding upsert, `getRoleProfile`, forum CRUD, dashboard composer, `mark_reply_helpful` duplicate-prevention, scraper utilities, source-module fixtures. Auth callback error-handling remains a standalone follow-up from `issues.md`.
+- [x] Update `README.md`, `supabase/README.md`, and `scraper/README.md` (env vars, run command, expected output, migration expectations).
+- [x] Run `npm run lint`, `npm run build`, `npm test`, scraper tests — all green.
+- [x] Record final QA checklist and any unresolved manual deployment/admin notes.
+- [x] Final commit reference recorded in Proof Log.

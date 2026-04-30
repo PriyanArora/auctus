@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-04-30
 **Current Gate:** G12 — Hardening and Release QA
-**Status:** G10 completed as `d97ffdb`; G11 completed as `ef71229` with browser/two-user auth proof still manual-blocked; continue with G12 hardening
+**Status:** G10-G12 completed locally on `main`; only external/manual proofs and standalone follow-ups remain
 
 ## Start Here
 
@@ -26,6 +26,7 @@ Implementation is now continuing directly on `main` per user instruction. Do not
 - G9 added forum schema/RLS/RPC, persisted forum runtime and pages, auth context provider, role-aware navbar, and signed-in landing redirect as `5c4c289`.
 - G10 added live-tuned ETL pipeline, six official source modules, source verification notes, scraper CLI/dry-run, dedupe/expire/normalize/Supabase stores, `0004_scrape_metadata.sql`, and scraper tests as `d97ffdb`.
 - G11 added funding RLS migration, dashboard funding summary/deadline/forum tiles, date-only deadline filtering, and dashboard/RLS SQL tests as `ef71229`.
+- G12 isolated demo provider usage, moved `middleware.ts` to the Next 16 `proxy.ts` convention, added scraper quality checks, refreshed docs, and completed final QA as `7c1c6de`.
 - Post-G9 fix pinned `turbopack.root` in `next.config.ts` so Next resolves `@/*` imports from the root project instead of the nested archived `auctus-frontend/` duplicate.
 - Post-G9 fix updated `lib/env.ts` so browser code reads `NEXT_PUBLIC_*` values through static `process.env.NEXT_PUBLIC_*` references instead of dynamic key lookup.
 
@@ -47,7 +48,7 @@ Resolved from review:
 - Source rate limits are now enforced inside source scrapes via `ctx.delay`.
 - `scraper/SOURCES.md` now records live-tuned status rather than speculative selector status.
 
-Remaining review blockers for G12:
+Remaining review/admin blockers:
 
 - `.claude/settings.local.json` is machine/tool-specific and should stay untracked.
 
@@ -76,6 +77,9 @@ Remaining review blockers for G12:
 - G11 RLS metadata: `npx supabase db query --linked ...pg_tables...` => RLS true on `funding`, `funding_preferences`, `funding_sources`, `scrape_runs`; `pg_policies` query => funding SELECT only, funding_preferences SELECT/INSERT/UPDATE/DELETE, no source/run authenticated policies.
 - G11 focused tests: `npm test -- --run test/unit/dashboard-composer.test.ts test/unit/funding-rls-sql.test.ts` => 2 files / 15 tests passed.
 - G11 full checks: `npm test` => 21 files / 102 tests passed; `npm run lint` => success with 20 legacy warnings only; `npm run build` => success.
+- G12 demo import audit: only `app/(demo)/**`, `components/demo/**`, and the documented `app/layout.tsx` chatbot exception import demo code.
+- G12 data-quality SQL: 0 `amount_range`, 0 `active_past_deadline`, 0 `scraped_missing_metadata`.
+- G12 final checks: `npm test` => 21 files / 102 tests passed; `npm run lint` => success with 20 legacy warnings only; `npm run build` => success; `npx tsc -p scraper/tsconfig.json --noEmit` => success.
 
 Known build warnings:
 
@@ -91,13 +95,11 @@ Known build warnings:
 - Live browser proof for onboarding, dashboard role surfaces, and funding RLS remains blocked until OAuth/email sign-in works.
 - Enabling and proving the GitHub scrape cron/manual workflow remains manual/deferred while GitHub workflow work is paused.
 
-## Codex-Doable Remaining Work
+## Codex-Doable Follow-Ups
 
-- Fix dashboard deadline filtering to compare date-only deadlines.
-- Keep `.claude/settings.local.json` out of commits.
-- Review/apply the remaining uncommitted G12 hardening/docs/data-quality changes.
-- Keep `.claude/settings.local.json`, `issues.md`, and `pendingcommits.md` out of product commits unless explicitly requested.
-- Re-run `npm test`, `npm run lint`, `npm run build`, and data-quality proof after G12 fixes.
+- Auth callback expired-link/error handling remains a standalone follow-up from `issues.md`; it was not bundled into G12.
+- Public grant browsing/sign-up UX/profile page/404 pages remain product follow-ups from `issues.md`.
+- Keep `issues.md` and `pendingcommits.md` out of product commits unless explicitly requested.
 
 ## Follow-Ups Already Noted
 
@@ -107,11 +109,7 @@ Known build warnings:
 
 ## Exact Next Action
 
-Start G12 review/fix on `main`:
+Next action:
 
-1. Review remaining uncommitted hardening changes: demo-provider isolation, scraper quality checks, README updates, and docs.
-2. Keep local/tool scratch files out of commits.
-3. Run data-quality checks against the shared dev DB.
-4. Re-run full verification and update `codex/SoloProgress.md` before closing G12.
-
-Do not close G12 until G11 is verified and documented.
+1. Handle manual/admin proof: Google OAuth, email magic-link, browser auth/onboarding/dashboard walkthrough, and GitHub scrape workflow trigger/cron.
+2. Then pick standalone product follow-ups from `issues.md` if desired.
