@@ -1,4 +1,4 @@
-// STATUS: DRAFT (LOCKED at V2.P1 completion gate)
+// STATUS: LOCKED
 // Owner: Dev A
 //
 // The slice of session state that Dev B is allowed to read.

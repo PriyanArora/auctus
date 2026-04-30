@@ -1,4 +1,4 @@
-// STATUS: DRAFT (LOCKED at V2.P1 completion gate)
+// STATUS: LOCKED
 // Owner: Dev B
 //
 // Funding shapes consumed by Dev A for dashboard tiles, landing teasers, and forum cross-links.

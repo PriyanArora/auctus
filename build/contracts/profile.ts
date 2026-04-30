@@ -1,4 +1,4 @@
-// STATUS: DRAFT (LOCKED at V2.P1 completion gate)
+// STATUS: LOCKED
 // Owner: Dev A
 //
 // Profile shapes consumed by Dev B for funding matching.
