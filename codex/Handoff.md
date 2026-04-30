@@ -27,6 +27,7 @@ Implementation is now continuing directly on `main` per user instruction. Do not
 - G10 added live-tuned ETL pipeline, six official source modules, source verification notes, scraper CLI/dry-run, dedupe/expire/normalize/Supabase stores, `0004_scrape_metadata.sql`, and scraper tests as `d97ffdb`.
 - G11 added funding RLS migration, dashboard funding summary/deadline/forum tiles, date-only deadline filtering, and dashboard/RLS SQL tests as `ef71229`.
 - G12 isolated demo provider usage, moved `middleware.ts` to the Next 16 `proxy.ts` convention, added scraper quality checks, refreshed docs, and completed final QA as `7c1c6de`.
+- GitHub `Scrape` workflow manual proof succeeded on `main` at `726e51c`; fresh `scrape_runs` rows were verified in Supabase.
 - Post-G9 fix pinned `turbopack.root` in `next.config.ts` so Next resolves `@/*` imports from the root project instead of the nested archived `auctus-frontend/` duplicate.
 - Post-G9 fix updated `lib/env.ts` so browser code reads `NEXT_PUBLIC_*` values through static `process.env.NEXT_PUBLIC_*` references instead of dynamic key lookup.
 
@@ -80,6 +81,7 @@ Remaining review/admin blockers:
 - G12 demo import audit: only `app/(demo)/**`, `components/demo/**`, and the documented `app/layout.tsx` chatbot exception import demo code.
 - G12 data-quality SQL: 0 `amount_range`, 0 `active_past_deadline`, 0 `scraped_missing_metadata`.
 - G12 final checks: `npm test` => 21 files / 102 tests passed; `npm run lint` => success with 20 legacy warnings only; `npm run build` => success; `npx tsc -p scraper/tsconfig.json --noEmit` => success.
+- GitHub scrape workflow proof: GitHub UI success at commit `726e51c`; Supabase latest six `scrape_runs` at `2026-04-30T21:37-21:38Z` all `success` with fetched counts 6, 14, 7, 517, 20, 2 and 0 errors.
 
 Known build warnings:
 
@@ -91,9 +93,9 @@ Known build warnings:
 - Email OTP / magic-link deliverability still needs inbox proof.
 - Fresh-browser auth redirect proof remains blocked until OAuth/email are configured.
 - Business/student/professor navbar funding-link and sign-out browser proof remain blocked until OAuth/email are configured.
-- GitHub scrape workflow manual trigger proof is deferred because the user asked to stop GitHub workflow/PR work.
+- GitHub scrape workflow manual trigger proof is `[done]` at commit `726e51c`; cron enablement remains optional/deferred.
 - Live browser proof for onboarding, dashboard role surfaces, and funding RLS remains blocked until OAuth/email sign-in works.
-- Enabling and proving the GitHub scrape cron/manual workflow remains manual/deferred while GitHub workflow work is paused.
+- Enabling and proving the GitHub scrape cron remains optional/deferred.
 
 ## Codex-Doable Follow-Ups
 
@@ -111,5 +113,5 @@ Known build warnings:
 
 Next action:
 
-1. Handle manual/admin proof: Google OAuth, email magic-link, browser auth/onboarding/dashboard walkthrough, and GitHub scrape workflow trigger/cron.
+1. Handle manual/admin proof: Google OAuth, email magic-link, browser auth/onboarding/dashboard walkthrough, and optional GitHub scrape cron.
 2. Then pick standalone product follow-ups from `issues.md` if desired.
