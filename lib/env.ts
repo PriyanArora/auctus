@@ -13,6 +13,20 @@ export type ServerEnv = {
   [Key in ServerEnvKey]: string;
 };
 
+function defaultPublicEnv(): EnvSource {
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  };
+}
+
+function defaultServerEnv(): EnvSource {
+  return {
+    ...defaultPublicEnv(),
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  };
+}
+
 function readRequiredEnv<Key extends string>(
   source: EnvSource,
   key: Key,
@@ -28,7 +42,7 @@ function readRequiredEnv<Key extends string>(
   return value;
 }
 
-export function getPublicEnv(source: EnvSource = process.env): PublicEnv {
+export function getPublicEnv(source: EnvSource = defaultPublicEnv()): PublicEnv {
   return {
     NEXT_PUBLIC_SUPABASE_URL: readRequiredEnv(
       source,
@@ -41,7 +55,7 @@ export function getPublicEnv(source: EnvSource = process.env): PublicEnv {
   };
 }
 
-export function getServerEnv(source: EnvSource = process.env): ServerEnv {
+export function getServerEnv(source: EnvSource = defaultServerEnv()): ServerEnv {
   return {
     ...getPublicEnv(source),
     SUPABASE_SERVICE_ROLE_KEY: readRequiredEnv(

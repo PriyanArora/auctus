@@ -25,6 +25,7 @@ Implementation is now continuing directly on `main` per user instruction. Do not
 - G8 added role-specific matching scorers, `scoreFor`, fixture-backed tests, and scored `GetFundingSummariesForUser` results as `4f819be`.
 - G9 added forum schema/RLS/RPC, persisted forum runtime and pages, auth context provider, role-aware navbar, and signed-in landing redirect as `5c4c289`.
 - Post-G9 fix pinned `turbopack.root` in `next.config.ts` so Next resolves `@/*` imports from the root project instead of the nested archived `auctus-frontend/` duplicate.
+- Post-G9 fix updated `lib/env.ts` so browser code reads `NEXT_PUBLIC_*` values through static `process.env.NEXT_PUBLIC_*` references instead of dynamic key lookup.
 
 ## Verification
 
@@ -35,6 +36,8 @@ Implementation is now continuing directly on `main` per user instruction. Do not
 - `npm run lint` after G9: success with 20 legacy warnings only.
 - `npm run build` after G9: success.
 - `npm run build` after Turbopack root fix: success; extra lockfile/root warning is gone.
+- `npm test -- --run test/unit/env.test.ts` after browser env fix: 1 file / 3 tests passed.
+- `npm run build` after browser env fix: success.
 - `supabase db push`: applied `0001_profiles_base.sql` and `0003_funding.sql`.
 - `supabase db push --include-all`: applied locked out-of-order `0002_role_profiles.sql`.
 - `supabase db push`: applied `0005_forum.sql` and `0010_rls_identity.sql`.
