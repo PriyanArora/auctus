@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FundingItem } from "@contracts/funding";
 import type { RoleProfile } from "@contracts/profile";
-import { GetFundingSummariesForUser } from "@/lib/funding/queries";
+import {
+  GetFundingSummariesForUser,
+  ListFundingForRole,
+} from "@/lib/funding/queries";
 
 const mocks = vi.hoisted(() => ({
   createFundingReadClient: vi.fn(),
@@ -67,6 +70,7 @@ function createQuery(data: FundingItem[]) {
   return {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+    contains: vi.fn().mockReturnThis(),
     or: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     range: vi.fn().mockResolvedValue({ data, error: null }),
@@ -125,5 +129,20 @@ describe("GetFundingSummariesForUser", () => {
         match_score: null,
       },
     ]);
+  });
+
+  it("filters listing pages by canonical tags", async () => {
+    const query = createQuery([baseItem]);
+    mocks.createFundingReadClient.mockResolvedValue({
+      from: vi.fn(() => query),
+    });
+
+    await ListFundingForRole({
+      role: "student",
+      category: "STEM",
+    });
+
+    expect(query.contains).toHaveBeenCalledWith("tags", ["STEM"]);
+    expect(query.eq).not.toHaveBeenCalledWith("category", "STEM");
   });
 });

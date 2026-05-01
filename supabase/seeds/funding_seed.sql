@@ -28,7 +28,7 @@ insert into public.funding (
     '{"location":"Atlantic Canada","employees_max":50}'::jsonb,
     array['Operate in Atlantic Canada', 'Have fewer than 50 employees'],
     'Growth',
-    array['business','growth','atlantic'],
+    array['Business','Growth','Provincial'],
     'manual',
     'active'
   ),
@@ -45,7 +45,7 @@ insert into public.funding (
     '{"industry":["technology","retail","services"]}'::jsonb,
     array['Submit a digital adoption plan'],
     'Digital',
-    array['business','digital'],
+    array['Business','Digital','Federal','STEM'],
     'manual',
     'active'
   ),
@@ -62,7 +62,7 @@ insert into public.funding (
     '{"province":"NB"}'::jsonb,
     array['New Brunswick business registration'],
     'Export',
-    array['business','export'],
+    array['Business','Export','Provincial'],
     'manual',
     'active'
   ),
@@ -79,7 +79,7 @@ insert into public.funding (
     '{"project_type":"clean operations"}'::jsonb,
     array['Eligible clean operations project'],
     'Sustainability',
-    array['business','sustainability'],
+    array['Business','Sustainability','Federal','STEM'],
     'manual',
     'active'
   ),
@@ -96,7 +96,7 @@ insert into public.funding (
     '{"stage":"startup"}'::jsonb,
     array['Business less than three years old'],
     'Startup',
-    array['business','startup'],
+    array['Business','Startup','Growth'],
     'manual',
     'active'
   ),
@@ -113,7 +113,7 @@ insert into public.funding (
     '{"province":"NB"}'::jsonb,
     array['Enrolled at an eligible institution'],
     'Provincial',
-    array['student','nb'],
+    array['Student','Scholarship','Provincial','Merit-based'],
     'manual',
     'active'
   ),
@@ -130,7 +130,7 @@ insert into public.funding (
     '{"field_of_study":"STEM"}'::jsonb,
     array['Studying in a STEM field'],
     'STEM',
-    array['student','stem'],
+    array['Student','Scholarship','STEM','Merit-based'],
     'manual',
     'active'
   ),
@@ -147,7 +147,7 @@ insert into public.funding (
     '{"education_level":["masters","phd"]}'::jsonb,
     array['Graduate enrollment'],
     'Graduate',
-    array['student','research'],
+    array['Student','Scholarship','Graduate','STEM','Federal','Merit-based'],
     'manual',
     'active'
   ),
@@ -164,7 +164,7 @@ insert into public.funding (
     '{"leadership":true}'::jsonb,
     array['Community leadership record'],
     'Leadership',
-    array['student','leadership'],
+    array['Student','Scholarship','Leadership','Provincial','Need-based'],
     'manual',
     'active'
   ),
@@ -181,7 +181,7 @@ insert into public.funding (
     '{"education_level":"college"}'::jsonb,
     array['Applied trades enrollment'],
     'Trades',
-    array['student','trades'],
+    array['Student','Scholarship','Trades','STEM','Provincial'],
     'manual',
     'active'
   ),
@@ -198,7 +198,7 @@ insert into public.funding (
     '{"career_stage":["early","mid"]}'::jsonb,
     array['Professor appointment'],
     'Discovery',
-    array['professor','research'],
+    array['Professor','Research','Discovery','Federal','STEM'],
     'manual',
     'active'
   ),
@@ -215,7 +215,7 @@ insert into public.funding (
     '{"research_area":"social innovation"}'::jsonb,
     array['Institutional approval'],
     'Social Sciences',
-    array['professor','ssh','innovation'],
+    array['Professor','Research','Social Sciences','Arts','Federal'],
     'manual',
     'active'
   ),
@@ -232,7 +232,7 @@ insert into public.funding (
     '{"partner_required":true}'::jsonb,
     array['Industry partner letter'],
     'Partnership',
-    array['professor','industry'],
+    array['Professor','Research','Partnership','Federal'],
     'manual',
     'active'
   ),
@@ -249,7 +249,7 @@ insert into public.funding (
     '{"equipment":true}'::jsonb,
     array['Equipment justification'],
     'Equipment',
-    array['professor','equipment'],
+    array['Professor','Research','Equipment','STEM','Federal'],
     'manual',
     'active'
   ),
@@ -266,7 +266,7 @@ insert into public.funding (
     '{"team_required":true}'::jsonb,
     array['Two or more disciplines represented'],
     'Interdisciplinary',
-    array['professor','team'],
+    array['Professor','Research','Interdisciplinary','Federal'],
     'manual',
     'active'
   );

@@ -38,7 +38,7 @@ export const ListFundingForRole: ListFundingForRoleContract = async (
     .order("created_at", { ascending: false });
 
   if (query.category) {
-    request = request.eq("category", query.category);
+    request = request.contains("tags", [query.category]);
   }
 
   if (query.search) {
