@@ -23,8 +23,8 @@ export default function UpcomingDeadlinesTile({
 }) {
   return (
     <Card
-      className="border border-gray-200"
-      header={<h2 className="text-lg font-semibold">Upcoming deadlines</h2>}
+      className="h-full border border-gray-200"
+      header={<h2 className="text-xl font-bold text-gray-900">Upcoming deadlines</h2>}
     >
       {items.length === 0 ? (
         <div className="space-y-3">
@@ -39,12 +39,19 @@ export default function UpcomingDeadlinesTile({
       ) : (
         <ul className="space-y-3">
           {items.map((item) => (
-            <li key={item.id} className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-medium text-gray-900">{item.name}</p>
-                <p className="text-sm text-gray-600">{item.provider}</p>
+            <li
+              key={item.id}
+              className="rounded-lg border border-orange-100 bg-orange-50/60 p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-medium text-gray-900">{item.name}</p>
+                  <p className="text-sm text-gray-600">{item.provider}</p>
+                </div>
+                <span className="whitespace-nowrap text-sm font-medium text-orange-700">
+                  {formatDeadline(item.deadline)}
+                </span>
               </div>
-              <span className="text-sm text-gray-600">{formatDeadline(item.deadline)}</span>
             </li>
           ))}
         </ul>

@@ -16,7 +16,7 @@ export default function ForumActivityTile({ threads }: { threads: ForumThread[] 
   return (
     <Card
       className="border border-gray-200"
-      header={<h2 className="text-lg font-semibold">Recent forum activity</h2>}
+      header={<h2 className="text-xl font-bold text-gray-900">Recent forum activity</h2>}
     >
       {threads.length === 0 ? (
         <div className="space-y-3">
@@ -29,9 +29,9 @@ export default function ForumActivityTile({ threads }: { threads: ForumThread[] 
           </Link>
         </div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="grid gap-3 md:grid-cols-2">
           {threads.map((thread) => (
-            <li key={thread.id} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+            <li key={thread.id} className="rounded-lg border border-gray-100 bg-gray-50 p-4">
               <Link
                 href={`/forum/${thread.id}`}
                 className="font-medium text-gray-900 hover:underline"
