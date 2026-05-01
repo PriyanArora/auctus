@@ -29,36 +29,65 @@ async function signInWithEmail(formData: FormData) {
   "use server";
 
   const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
 
   if (!email) {
     redirect("/sign-in?error=email");
   }
 
+  if (!password) {
+    redirect("/sign-in?error=password");
+  }
+
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
-    options: {
-      emailRedirectTo: getAuthCallbackUrl(),
-    },
+    password,
   });
 
   if (error) {
-    redirect("/sign-in?error=otp");
+    redirect("/sign-in?error=credentials");
   }
 
-  redirect("/sign-in?sent=1");
+  redirect("/dashboard");
 }
 
-export default function SignInPage() {
+function getErrorMessage(error?: string) {
+  if (!error) return null;
+
+  const messages: Record<string, string> = {
+    email: "Enter your email address.",
+    password: "Enter your password.",
+    credentials: "Email or password is incorrect.",
+    oauth: "Google sign-in could not be started. Try again.",
+  };
+
+  return messages[error] ?? "Sign-in failed. Try again.";
+}
+
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const params = await searchParams;
+  const errorMessage = getErrorMessage(params.error);
+
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-16">
       <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900">Sign in</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Use Google or a magic link. Password sign-in is not enabled.
+            Use Google or your email and password to access your account.
           </p>
         </div>
+
+        {errorMessage && (
+          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {errorMessage}
+          </div>
+        )}
 
         <form action={signInWithGoogle}>
           <Button type="submit" variant="primary" className="w-full">
@@ -83,8 +112,16 @@ export default function SignInPage() {
             required
             placeholder="you@example.com"
           />
+          <Input
+            label="Password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            placeholder="Enter your password"
+          />
           <Button type="submit" variant="outline" className="w-full">
-            Send magic link
+            Sign in with email
           </Button>
         </form>
       </div>
