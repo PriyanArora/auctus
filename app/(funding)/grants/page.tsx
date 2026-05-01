@@ -17,20 +17,27 @@ export default async function GrantsPage({
   });
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
-      <div className="mb-6">
-        <h1 className="text-3xl font-semibold text-gray-900">Business grants</h1>
-        <p className="mt-2 text-gray-600">
-          Funding opportunities for business growth and operations.
-        </p>
-      </div>
-      <FundingFilters
-        role="business"
-        search={params.search}
-        category={params.category}
-      />
-      <div className="mt-6">
-        <FundingList items={items} basePath="/grants" />
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900">Business grants</h1>
+            <p className="mt-2 text-lg text-gray-600">
+              Funding opportunities for growth, hiring, exports, and operations.
+            </p>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-600 shadow-sm">
+            <span className="font-semibold text-gray-900">{items.length}</span> results
+          </div>
+        </div>
+        <FundingFilters
+          role="business"
+          search={params.search}
+          category={params.category}
+        />
+        <div className="mt-6">
+          <FundingList items={items} basePath="/grants" />
+        </div>
       </div>
     </div>
   );
