@@ -42,6 +42,7 @@ Implementation is now continuing directly on `main` per user instruction. Do not
   - Issue 17 restored funding cards/filter-chip layout as `566ee2f`.
   - Issue 18 restored dashboard visual hierarchy as `a8399e3`.
   - Issue 19 restored forum search/category-chip/thread-card layout as `be3ce5a`.
+- Post-issue feedback fix in working tree: funding pages now load role funding once and filter client-side with multi-select category checkboxes, deadline filtering, sorting, profile-derived default tags, and URL state updates without server navigation; dashboard now fetches matched funding once instead of twice and limits dashboard forum fetches to 5 threads; navbar now treats signed-in null-role users as onboarding users instead of guests and avoids duplicate `/dashboard` nav keys.
 
 ## Claude Work Review — 2026-04-30
 
@@ -97,6 +98,7 @@ Remaining review/admin blockers:
 - Issue 16 live filter proof after `0021_funding_tag_taxonomy.sql`: `student STEM` => 54 rows, `student Provincial` => 57 rows, `business Federal` => 20 rows.
 - Issue 20 migration proof: `npx supabase db push --include-all --yes` applied `0011_profile_match_tags.sql`; RLS metadata query returned `relrowsecurity = true`.
 - Issue resolution final checks: `npm test` => 22 files / 106 tests passed; `npm run lint` => success with 20 legacy demo warnings only; `npm run build` => success.
+- Post-feedback funding/render checks: initial focused `npm test -- --run test/unit/funding-summaries.test.ts test/unit/dashboard-composer.test.ts` failed in sandbox with Windows `spawn EPERM` while Vite loaded config; escalated rerun passed 2 files / 14 tests. `npm run lint` => success with 20 legacy demo warnings only. `npm run build` => success. Full `npm test` => 22 files / 107 tests passed. After duplicate navbar key fix, `npm run lint` => success with 20 legacy demo warnings only; focused funding/dashboard tests => 2 files / 14 tests passed; `npm run build` => success; full `npm test` => 22 files / 107 tests passed.
 
 Known build warnings:
 
@@ -116,6 +118,8 @@ Known build warnings:
 
 - Public grant browsing remains future scope from `issues.md`.
 - Keep `issues.md` and `pendingcommits.md` out of product commits unless explicitly requested.
+- Browser-check funding pages after the new client-side browser change: confirm profile tags preselect from onboarding, multiple filters narrow results, and filter clicks no longer show a full-page server render delay.
+- Dev server note: existing Next dev server is running at `http://localhost:3000` with PID `25604`; a new `npm run dev` attempt correctly reported that server as already running.
 
 ## Follow-Ups Already Noted
 

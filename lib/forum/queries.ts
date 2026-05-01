@@ -114,9 +114,11 @@ async function requireSession() {
 export async function listThreads({
   category,
   search,
+  limit,
 }: {
   category?: string;
   search?: string;
+  limit?: number;
 } = {}): Promise<ForumThread[]> {
   const supabase = await createClient();
   let request = supabase
@@ -134,6 +136,10 @@ export async function listThreads({
     request = request.or(
       `title.ilike.%${search}%,content.ilike.%${search}%,category.ilike.%${search}%`,
     );
+  }
+
+  if (limit) {
+    request = request.limit(limit);
   }
 
   const { data, error } = await request;

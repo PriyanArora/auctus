@@ -16,19 +16,25 @@ type NavProfile = {
   avatar_url: string | null;
 };
 
-function navForRole(role: keyof typeof ROLE_DEFAULT_ROUTE | null) {
-  if (!role) {
+function navForSession(session: Session | null) {
+  if (!session) {
     return [
       { name: "Home", href: "/" },
       { name: "Sign in", href: "/sign-in" },
     ];
   }
 
+  if (!session.role) {
+    return [
+      { name: "Home", href: "/" },
+      { name: "Onboarding", href: "/onboarding" },
+    ];
+  }
+
   return [
-    { name: "Home", href: "/" },
-    { name: "Dashboard", href: "/dashboard" },
+    { name: "Home", href: "/dashboard" },
     { name: "Forum", href: "/forum" },
-    { name: "Funding", href: ROLE_DEFAULT_ROUTE[role] },
+    { name: "Funding", href: ROLE_DEFAULT_ROUTE[session.role] },
   ];
 }
 
@@ -51,7 +57,7 @@ export default function Navbar({ initialSession }: { initialSession?: Session | 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [profile, setProfile] = useState<NavProfile | null>(null);
-  const links = navForRole(session?.role ?? null);
+  const links = navForSession(session);
 
   useEffect(() => {
     let mounted = true;
@@ -89,7 +95,10 @@ export default function Navbar({ initialSession }: { initialSession?: Session | 
     <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
-          <Link href={session?.role ? "/dashboard" : "/"} className="flex items-center">
+          <Link
+            href={session ? (session.role ? "/dashboard" : "/onboarding") : "/"}
+            className="flex items-center"
+          >
             <span className="text-xl font-bold text-gray-900">Auctus AI</span>
           </Link>
 
@@ -132,7 +141,7 @@ export default function Navbar({ initialSession }: { initialSession?: Session | 
                     )}
                   </span>
                   <span className="max-w-32 truncate">
-                    {profile?.display_name || session.role || "Profile"}
+                    {profile?.display_name || session.role || "Complete profile"}
                   </span>
                   <ChevronDown className="h-4 w-4 text-gray-500" />
                 </button>
@@ -140,12 +149,12 @@ export default function Navbar({ initialSession }: { initialSession?: Session | 
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-56 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
                     <Link
-                      href="/profile"
+                      href={session.role ? "/profile" : "/onboarding"}
                       onClick={() => setIsProfileOpen(false)}
                       className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       <UserCircle className="h-4 w-4" />
-                      My profile
+                      {session.role ? "My profile" : "Complete profile"}
                     </Link>
                     <form action="/sign-out" method="post" className="mt-1 border-t border-gray-100 pt-1">
                       <button
@@ -203,14 +212,14 @@ export default function Navbar({ initialSession }: { initialSession?: Session | 
           {!loading && session && (
             <div className="mt-3 border-t border-gray-100 pt-3">
               <Link
-                href="/profile"
+                href={session.role ? "/profile" : "/onboarding"}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="mb-3 flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100"
               >
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white">
                   {initials}
                 </span>
-                <span>{profile?.display_name || session.role || "My profile"}</span>
+                <span>{profile?.display_name || session.role || "Complete profile"}</span>
               </Link>
               <form action="/sign-out" method="post">
               <Button type="submit" variant="outline" className="w-full">

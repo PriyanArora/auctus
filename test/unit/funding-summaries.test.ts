@@ -167,4 +167,19 @@ describe("GetFundingSummariesForUser", () => {
     expect(query.contains).toHaveBeenCalledWith("tags", ["STEM"]);
     expect(query.eq).not.toHaveBeenCalledWith("category", "STEM");
   });
+
+  it("supports multiple canonical tag filters as an AND query", async () => {
+    const query = createQuery([baseItem]);
+    mocks.createFundingReadClient.mockResolvedValue({
+      from: vi.fn(() => query),
+    });
+
+    await ListFundingForRole({
+      role: "student",
+      category: "STEM,Provincial",
+    });
+
+    expect(query.contains).toHaveBeenCalledWith("tags", ["STEM"]);
+    expect(query.contains).toHaveBeenCalledWith("tags", ["Provincial"]);
+  });
 });

@@ -27,16 +27,15 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  const [topMatches, candidateDeadlines, threads] = await Promise.all([
-    GetFundingSummariesForUser(session.user_id, TOP_MATCHES_LIMIT),
+  const [fundingSummaries, threads, roleProfile] = await Promise.all([
     GetFundingSummariesForUser(session.user_id, DEADLINE_CANDIDATE_LIMIT),
-    listThreads(),
+    listThreads({ limit: 5 }),
+    getRoleProfile(session.user_id),
   ]);
-  const roleProfile = await getRoleProfile(session.user_id);
 
   const data = composeDashboard({
-    topMatches,
-    candidateDeadlines,
+    topMatches: fundingSummaries.slice(0, TOP_MATCHES_LIMIT),
+    candidateDeadlines: fundingSummaries,
     threads,
     asOf: new Date(),
   });

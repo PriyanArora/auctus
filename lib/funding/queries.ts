@@ -26,6 +26,13 @@ function toFundingSummary(
   };
 }
 
+function parseCategoryFilters(category: string | undefined) {
+  return (category ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 export const ListFundingForRole: ListFundingForRoleContract = async (
   query: FundingQuery,
 ) => {
@@ -37,8 +44,8 @@ export const ListFundingForRole: ListFundingForRoleContract = async (
     .eq("status", query.status ?? "active")
     .order("created_at", { ascending: false });
 
-  if (query.category) {
-    request = request.contains("tags", [query.category]);
+  for (const category of parseCategoryFilters(query.category)) {
+    request = request.contains("tags", [category]);
   }
 
   if (query.search) {
