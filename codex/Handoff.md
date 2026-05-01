@@ -1,8 +1,8 @@
 # Auctus V2 Handoff
 
-**Last Updated:** 2026-04-30
+**Last Updated:** 2026-05-01
 **Current Gate:** G12 — Hardening and Release QA
-**Status:** G10-G12 completed locally on `main`; only external/manual proofs and standalone follow-ups remain
+**Status:** G10-G12 completed locally on `main`; issues 5, 6, 11, 14, 16, 17, 18, 19, 20, and 21 resolved locally with separate commits
 
 ## Start Here
 
@@ -31,6 +31,17 @@ Implementation is now continuing directly on `main` per user instruction. Do not
 - Scrape workflow cron is enabled for daily `03:00 UTC` runs as `87daa98`; first scheduled-run proof is still pending.
 - Post-G9 fix pinned `turbopack.root` in `next.config.ts` so Next resolves `@/*` imports from the root project instead of the nested archived `auctus-frontend/` duplicate.
 - Post-G9 fix updated `lib/env.ts` so browser code reads `NEXT_PUBLIC_*` values through static `process.env.NEXT_PUBLIC_*` references instead of dynamic key lookup.
+- Issue resolution task completed on `main`:
+  - Issue 21 removed magic-link sign-in and added email/password sign-in as `2554bf0`.
+  - Issue 11 added OAuth callback failure handling and visible sign-in errors as `ae169fc`.
+  - Issue 5 added `/sign-up`, split new/returning auth flows, and updated guest entry points as `86bb280`.
+  - Issue 6 added `/profile`, `/profile/edit`, profile update support, and authenticated navbar profile menu as `db7e7c1`.
+  - Issue 14 added styled 404/error pages as `1fefab0`.
+  - Issue 16 normalized canonical funding tags, moved filters to tag containment, applied `0021_funding_tag_taxonomy.sql`, and verified live counts as `c7438a0`.
+  - Issue 20 added identity-owned `0011_profile_match_tags.sql`, redesigned onboarding around funding tags, and wired match tags into scoring as `2ef19b5`.
+  - Issue 17 restored funding cards/filter-chip layout as `566ee2f`.
+  - Issue 18 restored dashboard visual hierarchy as `a8399e3`.
+  - Issue 19 restored forum search/category-chip/thread-card layout as `be3ce5a`.
 
 ## Claude Work Review — 2026-04-30
 
@@ -83,6 +94,9 @@ Remaining review/admin blockers:
 - G12 data-quality SQL: 0 `amount_range`, 0 `active_past_deadline`, 0 `scraped_missing_metadata`.
 - G12 final checks: `npm test` => 21 files / 102 tests passed; `npm run lint` => success with 20 legacy warnings only; `npm run build` => success; `npx tsc -p scraper/tsconfig.json --noEmit` => success.
 - GitHub scrape workflow proof: GitHub UI success at commit `726e51c`; Supabase latest six `scrape_runs` at `2026-04-30T21:37-21:38Z` all `success` with fetched counts 6, 14, 7, 517, 20, 2 and 0 errors.
+- Issue 16 live filter proof after `0021_funding_tag_taxonomy.sql`: `student STEM` => 54 rows, `student Provincial` => 57 rows, `business Federal` => 20 rows.
+- Issue 20 migration proof: `npx supabase db push --include-all --yes` applied `0011_profile_match_tags.sql`; RLS metadata query returned `relrowsecurity = true`.
+- Issue resolution final checks: `npm test` => 22 files / 106 tests passed; `npm run lint` => success with 20 legacy demo warnings only; `npm run build` => success.
 
 Known build warnings:
 
@@ -91,17 +105,16 @@ Known build warnings:
 ## Manual Blockers
 
 - Google OAuth provider setup still needs browser/dashboard proof.
-- Email OTP / magic-link deliverability still needs inbox proof.
-- Fresh-browser auth redirect proof remains blocked until OAuth/email are configured.
-- Business/student/professor navbar funding-link and sign-out browser proof remain blocked until OAuth/email are configured.
+- Email/password provider setup and browser account-creation proof still need manual proof.
+- Fresh-browser auth redirect proof remains blocked until OAuth/email-password are configured.
+- Business/student/professor navbar funding-link and sign-out browser proof remain blocked until OAuth/email-password are configured.
 - GitHub scrape workflow manual trigger proof is `[done]` at commit `726e51c`; cron is enabled and first scheduled-run proof remains pending.
-- Live browser proof for onboarding, dashboard role surfaces, and funding RLS remains blocked until OAuth/email sign-in works.
+- Live browser proof for onboarding, dashboard role surfaces, and funding RLS remains blocked until OAuth/email-password sign-in works.
 - Proving the first scheduled GitHub scrape cron run remains pending.
 
 ## Codex-Doable Follow-Ups
 
-- Auth callback expired-link/error handling remains a standalone follow-up from `issues.md`; it was not bundled into G12.
-- Public grant browsing/sign-up UX/profile page/404 pages remain product follow-ups from `issues.md`.
+- Public grant browsing remains future scope from `issues.md`.
 - Keep `issues.md` and `pendingcommits.md` out of product commits unless explicitly requested.
 
 ## Follow-Ups Already Noted
@@ -114,5 +127,6 @@ Known build warnings:
 
 Next action:
 
-1. Handle manual/admin proof: first scheduled GitHub scrape cron run, Google OAuth, email magic-link, and browser auth/onboarding/dashboard walkthrough.
-2. Then pick standalone product follow-ups from `issues.md` if desired.
+1. Handle manual/admin proof: first scheduled GitHub scrape cron run, Google OAuth, email/password auth, and browser auth/onboarding/dashboard walkthrough.
+2. Browser-check the new email/password sign-up and sign-in flows against the Supabase Auth provider settings.
+3. Then pick future-scope product follow-ups from `issues.md` if desired.
