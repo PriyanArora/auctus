@@ -60,6 +60,7 @@ function getErrorMessage(error?: string) {
     password: "Enter your password.",
     credentials: "Email or password is incorrect.",
     oauth: "Google sign-in could not be started. Try again.",
+    link_expired: "That sign-in link expired or could not be verified. Try signing in again.",
   };
 
   return messages[error] ?? "Sign-in failed. Try again.";
